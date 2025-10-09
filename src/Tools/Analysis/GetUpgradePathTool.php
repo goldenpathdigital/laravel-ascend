@@ -18,6 +18,32 @@ final class GetUpgradePathTool extends ProjectAwareTool
         return 'Compute the recommended Laravel version upgrade path for the project.';
     }
 
+    public function getInputSchema(): array
+    {
+        $properties = array_merge(
+            $this->baseProjectProperties(),
+            $this->upgradeRangeProperties(),
+            [
+                'from_version' => [
+                    'type' => 'string',
+                    'description' => 'Explicit starting version when requesting a custom range (e.g. "9" or "9.x").',
+                ],
+                'to_version' => [
+                    'type' => 'string',
+                    'description' => 'Explicit target version when requesting a custom range.',
+                ],
+            ]
+        );
+
+        $schema = $this->buildSchema($properties);
+        $schema['anyOf'] = [
+            ['required' => ['from_version', 'to_version']],
+            ['required' => ['project_root']],
+        ];
+
+        return $schema;
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

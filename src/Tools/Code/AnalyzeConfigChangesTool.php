@@ -18,6 +18,13 @@ final class AnalyzeConfigChangesTool extends ProjectAwareTool
         return 'Summarise configuration files and highlight keys for manual review.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            $this->baseProjectProperties()
+        );
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

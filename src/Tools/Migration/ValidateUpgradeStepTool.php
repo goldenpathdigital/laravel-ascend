@@ -19,6 +19,28 @@ final class ValidateUpgradeStepTool extends ProjectAwareTool
         return 'Verify whether a specific upgrade step has been completed by checking for remaining detections.';
     }
 
+    public function getInputSchema(): array
+    {
+        $properties = array_merge(
+            $this->baseProjectProperties(),
+            $this->upgradeRangeProperties(),
+            [
+                'change' => [
+                    'type' => 'string',
+                    'description' => 'Identifier of the breaking change to validate (e.g. "symfony-5-method-signatures").',
+                ],
+            ]
+        );
+
+        $schema = $this->buildSchema($properties, ['change']);
+        $schema['anyOf'] = [
+            ['required' => ['from', 'to', 'change']],
+            ['required' => ['project_root', 'change']],
+        ];
+
+        return $schema;
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

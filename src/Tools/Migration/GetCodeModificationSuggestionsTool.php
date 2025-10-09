@@ -19,6 +19,27 @@ final class GetCodeModificationSuggestionsTool extends ProjectAwareTool
         return 'Retrieve suggested code modifications for a breaking change or pattern.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            [
+                'change' => [
+                    'type' => 'string',
+                    'description' => 'Breaking change identifier (e.g. "symfony-5-method-signatures").',
+                ],
+                'version' => [
+                    'type' => 'string',
+                    'description' => 'Optional Laravel version to narrow lookups (e.g. "8.x").',
+                ],
+                'file' => [
+                    'type' => 'string',
+                    'description' => 'Optional project-relative file path for additional context in responses.',
+                ],
+            ],
+            ['change']
+        );
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

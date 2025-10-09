@@ -19,6 +19,26 @@ final class CheckPackageCompatibilityTool extends ProjectAwareTool
         return 'Check whether a Composer package constraint is compatible with a target Laravel version.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            array_merge(
+                $this->baseProjectProperties(),
+                [
+                    'package' => [
+                        'type' => 'string',
+                        'description' => 'Composer package name to inspect (e.g. "laravel/framework").',
+                    ],
+                    'target' => [
+                        'type' => 'string',
+                        'description' => 'Target Laravel version to validate against (e.g. "11.x").',
+                    ],
+                ]
+            ),
+            ['package', 'target']
+        );
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

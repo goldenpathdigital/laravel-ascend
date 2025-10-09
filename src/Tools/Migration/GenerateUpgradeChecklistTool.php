@@ -18,6 +18,22 @@ final class GenerateUpgradeChecklistTool extends ProjectAwareTool
         return 'Produce a checklist of tasks required to upgrade between Laravel versions.';
     }
 
+    public function getInputSchema(): array
+    {
+        $properties = array_merge(
+            $this->baseProjectProperties(),
+            $this->upgradeRangeProperties()
+        );
+
+        $schema = $this->buildSchema($properties);
+        $schema['anyOf'] = [
+            ['required' => ['from', 'to']],
+            ['required' => ['project_root']],
+        ];
+
+        return $schema;
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

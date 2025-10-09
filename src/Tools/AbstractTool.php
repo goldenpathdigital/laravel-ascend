@@ -64,14 +64,33 @@ abstract class AbstractTool implements ToolInterface
 
     public function getInputSchema(): array
     {
-        return [
-            'type' => 'object',
-            'properties' => new \stdClass(),
-        ];
+        return $this->buildSchema();
     }
 
     public function getAnnotations(): array
     {
         return [];
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $properties
+     * @param array<int, string> $required
+     */
+    protected function buildSchema(array $properties = [], array $required = [], bool $allowAdditional = false): array
+    {
+        $schema = [
+            'type' => 'object',
+            'properties' => $properties === [] ? new \stdClass() : $properties,
+        ];
+
+        if ($required !== []) {
+            $schema['required'] = $required;
+        }
+
+        if (!$allowAdditional) {
+            $schema['additionalProperties'] = false;
+        }
+
+        return $schema;
     }
 }

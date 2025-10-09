@@ -18,6 +18,13 @@ final class AnalyzeCurrentVersionTool extends ProjectAwareTool
         return 'Inspect the project to determine current Laravel and PHP version constraints.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            $this->baseProjectProperties()
+        );
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

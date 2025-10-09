@@ -19,6 +19,21 @@ final class SuggestPackageUpdatesTool extends ProjectAwareTool
         return 'Provide suggestions for updating Composer packages ahead of a Laravel upgrade.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            array_merge(
+                $this->baseProjectProperties(),
+                [
+                    'target' => [
+                        'type' => 'string',
+                        'description' => 'Target Laravel version to prepare for (defaults to the latest supported major if omitted).',
+                    ],
+                ]
+            )
+        );
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

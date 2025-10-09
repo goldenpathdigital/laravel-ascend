@@ -18,6 +18,13 @@ final class AnalyzeDependenciesTool extends ProjectAwareTool
         return 'Summarise first-party and third-party Composer dependencies for the project.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            $this->baseProjectProperties()
+        );
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

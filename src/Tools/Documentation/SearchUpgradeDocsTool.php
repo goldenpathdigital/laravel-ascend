@@ -28,6 +28,33 @@ final class SearchUpgradeDocsTool extends AbstractTool
         return 'Search the Laravel upgrade knowledge base for relevant documents and guidance.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            [
+                'query' => [
+                    'type' => 'string',
+                    'description' => 'Search text to look up within the upgrade documentation.',
+                ],
+                'limit' => [
+                    'type' => 'integer',
+                    'minimum' => 1,
+                    'maximum' => 50,
+                    'description' => 'Maximum number of results to return (default 10).',
+                ],
+                'range' => [
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'string',
+                        'description' => 'Document type filters (e.g. "breaking_change", "pattern").',
+                    ],
+                    'description' => 'Optional list of result types to include.',
+                ],
+            ],
+            ['query']
+        );
+    }
+
     /**
      * @param array<string, mixed> $payload
      *

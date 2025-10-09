@@ -19,6 +19,23 @@ final class ScanBreakingChangesTool extends ProjectAwareTool
         return 'Scan the project for potential breaking changes when upgrading between Laravel versions.';
     }
 
+    public function getInputSchema(): array
+    {
+        $properties = array_merge(
+            $this->baseProjectProperties(),
+            $this->upgradeRangeProperties()
+        );
+
+        $schema = $this->buildSchema($properties);
+        $schema['anyOf'] = [
+            ['required' => ['from', 'to']],
+            ['required' => ['target']],
+            ['required' => ['project_root']],
+        ];
+
+        return $schema;
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

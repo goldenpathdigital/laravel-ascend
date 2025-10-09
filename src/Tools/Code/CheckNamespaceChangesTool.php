@@ -18,6 +18,13 @@ final class CheckNamespaceChangesTool extends ProjectAwareTool
         return 'Detect classes under the app directory that use legacy namespaces.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            $this->baseProjectProperties()
+        );
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

@@ -46,6 +46,90 @@ abstract class ProjectAwareTool extends AbstractTool
     }
 
     /**
+     * Common schema definition for tools that operate on the local project.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    protected function baseProjectProperties(): array
+    {
+        return [
+            'project_root' => [
+                'type' => 'string',
+                'description' => 'Absolute path to the Laravel project root. Defaults to the current working project (`base_path()`) when omitted.',
+            ],
+        ];
+    }
+
+    /**
+     * Schema definitions for version range inputs shared across upgrade tools.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    protected function upgradeRangeProperties(): array
+    {
+        $versionDescription = 'Laravel version identifier, such as "10", "10.x", or "10.3.0".';
+
+        return [
+            'from' => [
+                'type' => 'string',
+                'description' => 'Starting Laravel version for the upgrade (defaults to the project\'s current major).',
+            ],
+            'to' => [
+                'type' => 'string',
+                'description' => 'Target Laravel version for the upgrade.',
+            ],
+            'target' => [
+                'type' => 'string',
+                'description' => 'Alias for the target Laravel version (e.g. "11" or "11.x").',
+            ],
+            'target_version' => [
+                'type' => 'string',
+                'description' => 'Alternative snake_case key for the target Laravel version.',
+                'deprecated' => true,
+            ],
+            'targetVersion' => [
+                'type' => 'string',
+                'description' => 'Alternative camelCase key for the target Laravel version.',
+                'deprecated' => true,
+            ],
+            'target_laravel_version' => [
+                'type' => 'string',
+                'description' => 'Explicit Laravel target version (used by some agents).',
+            ],
+            'targetLaravelVersion' => [
+                'type' => 'string',
+                'description' => 'CamelCase alias for the Laravel target version.',
+                'deprecated' => true,
+            ],
+            'to_version' => [
+                'type' => 'string',
+                'description' => 'Alternative key for the target version when providing explicit ranges.',
+                'deprecated' => true,
+            ],
+            'toVersion' => [
+                'type' => 'string',
+                'description' => 'CamelCase alias for the target version.',
+                'deprecated' => true,
+            ],
+            'context' => [
+                'type' => 'object',
+                'description' => 'Optional nested context payload that may contain "from" and "to" keys supplied by some agents.',
+                'properties' => [
+                    'from' => [
+                        'type' => 'string',
+                        'description' => $versionDescription,
+                    ],
+                    'to' => [
+                        'type' => 'string',
+                        'description' => $versionDescription,
+                    ],
+                ],
+                'additionalProperties' => true,
+            ],
+        ];
+    }
+
+    /**
      * @param array<string, mixed> $payload
      *
      * @return array{from:string,to:string,identifier:?string}

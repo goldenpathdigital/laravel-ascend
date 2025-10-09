@@ -29,6 +29,23 @@ final class GetBreakingChangeDetailsTool extends AbstractTool
         return 'Fetch the details for a specific breaking change in a given Laravel release.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            [
+                'id' => [
+                    'type' => 'string',
+                    'description' => 'Breaking change identifier (e.g. "symfony-5-method-signatures").',
+                ],
+                'version' => [
+                    'type' => 'string',
+                    'description' => 'Laravel release that contains the breaking change (e.g. "8.x").',
+                ],
+            ],
+            ['id', 'version']
+        );
+    }
+
     /**
      * @param array<string, mixed> $payload
      *

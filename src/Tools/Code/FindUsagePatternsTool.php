@@ -19,6 +19,26 @@ final class FindUsagePatternsTool extends ProjectAwareTool
         return 'Search the project for usage patterns defined in the knowledge base or custom regex/glob combinations.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            array_merge(
+                $this->baseProjectProperties(),
+                [
+                    'pattern' => [
+                        'type' => 'string',
+                        'description' => 'Knowledge base pattern identifier or raw regular expression to search for.',
+                    ],
+                    'glob' => [
+                        'type' => 'string',
+                        'description' => 'Optional glob pattern limiting the search scope when using raw regex (default "**/*.php").',
+                    ],
+                ]
+            ),
+            ['pattern']
+        );
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

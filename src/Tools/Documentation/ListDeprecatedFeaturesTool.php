@@ -29,6 +29,19 @@ final class ListDeprecatedFeaturesTool extends AbstractTool
         return 'List deprecated features and APIs for a given Laravel version.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            [
+                'version' => [
+                    'type' => 'string',
+                    'description' => 'Laravel version to inspect for deprecations (e.g. "10.x").',
+                ],
+            ],
+            ['version']
+        );
+    }
+
     /**
      * @param array<string, mixed> $payload
      *

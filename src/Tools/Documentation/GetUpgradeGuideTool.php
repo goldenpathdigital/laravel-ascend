@@ -29,6 +29,23 @@ final class GetUpgradeGuideTool extends AbstractTool
         return 'Retrieve the upgrade guide, required steps, and related patterns for a Laravel version transition.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            [
+                'from' => [
+                    'type' => 'string',
+                    'description' => 'Starting Laravel version (e.g. "9.x").',
+                ],
+                'to' => [
+                    'type' => 'string',
+                    'description' => 'Target Laravel version (e.g. "10.x").',
+                ],
+            ],
+            ['from', 'to']
+        );
+    }
+
     /**
      * @param array<string, mixed> $payload
      *

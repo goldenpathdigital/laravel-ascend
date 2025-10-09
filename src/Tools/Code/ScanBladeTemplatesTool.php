@@ -18,6 +18,13 @@ final class ScanBladeTemplatesTool extends ProjectAwareTool
         return 'Review Blade templates for deprecated directives and risky patterns.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            $this->baseProjectProperties()
+        );
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);

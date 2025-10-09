@@ -18,6 +18,13 @@ final class AnalyzeFacadesTool extends ProjectAwareTool
         return 'Identify Laravel facade usages within the project.';
     }
 
+    public function getInputSchema(): array
+    {
+        return $this->buildSchema(
+            $this->baseProjectProperties()
+        );
+    }
+
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);
