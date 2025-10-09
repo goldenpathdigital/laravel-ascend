@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace GoldenPathDigital\LaravelAscend\Tools;
 
+use function base_path;
+
 use GoldenPathDigital\LaravelAscend\Analyzers\FilesystemScanner;
 use GoldenPathDigital\LaravelAscend\Analyzers\PatternAnalyzer;
 use GoldenPathDigital\LaravelAscend\Analyzers\ProjectAnalyzer;
 use GoldenPathDigital\LaravelAscend\Analyzers\ProjectContext;
 use GoldenPathDigital\LaravelAscend\Documentation\KnowledgeBaseService;
-use function base_path;
 
 abstract class ProjectAwareTool extends AbstractTool
 {

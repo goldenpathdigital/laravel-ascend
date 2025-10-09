@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace GoldenPathDigital\LaravelAscend\Console;
 
+use function config;
+
 use GoldenPathDigital\LaravelAscend\Server\AscendServer;
 use GoldenPathDigital\LaravelAscend\Server\Mcp\McpRequestHandler;
 use GoldenPathDigital\LaravelAscend\Server\Mcp\McpStdioServer;
@@ -12,7 +14,7 @@ use Illuminate\Console\Command;
 use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
-use function config;
+
 use function set_time_limit;
 
 class ServeCommand extends Command
