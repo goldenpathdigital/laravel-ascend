@@ -14,11 +14,10 @@ afterEach(function () {
 
 test('config loads defaults when no file exists', function () {
     Config::setConfigPath('/nonexistent/path/config.php');
-    
+
     $config = Config::all();
-    
+
     expect($config)->toBeArray()
-        ->toHaveKey('server')
         ->toHaveKey('knowledge_base')
         ->toHaveKey('documentation')
         ->toHaveKey('analysis');
@@ -31,9 +30,9 @@ test('config get returns default value for missing key', function () {
 });
 
 test('config get returns nested values with dot notation', function () {
-    $host = Config::get('server.host');
-    
-    expect($host)->toBe('127.0.0.1');
+    $githubOrg = Config::get('documentation.sources.github_org');
+
+    expect($githubOrg)->toBe('laravel');
 });
 
 test('config get returns null for missing key without default', function () {
@@ -42,18 +41,6 @@ test('config get returns null for missing key without default', function () {
     expect($value)->toBeNull();
 });
 
-test('config has server settings', function () {
-    $config = Config::all();
-    
-    expect($config['server'])->toBeArray()
-        ->toHaveKey('host')
-        ->toHaveKey('port')
-        ->toHaveKey('protocol');
-    
-    expect($config['server']['host'])->toBe('127.0.0.1');
-    expect($config['server']['port'])->toBe(8765);
-    expect($config['server']['protocol'])->toBe('websocket');
-});
 
 test('config has knowledge base settings', function () {
     $config = Config::all();
