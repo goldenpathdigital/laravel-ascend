@@ -88,7 +88,16 @@ final class AscendServer
 
     public function getInstructions(): string
     {
-        return 'Ascend exposes structured Laravel upgrade guidance, analyzers, and migration utilities.';
+        return implode(PHP_EOL, [
+            'Ascend exposes structured Laravel upgrade guidance, analyzers, and migration utilities.',
+            '',
+            'Before starting an upgrade, establish a baseline:',
+            '- Run the full test suite and record the results.',
+            '- Capture key performance and error-rate metrics.',
+            '- Back up the database and storage assets.',
+            '- Tag or note the current git commit, ensuring a clean working tree.',
+            '- Document the active runtime environment (PHP version, extensions, queues, schedulers).',
+        ]);
     }
 
     /**

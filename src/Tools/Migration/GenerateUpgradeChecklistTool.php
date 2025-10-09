@@ -75,6 +75,7 @@ final class GenerateUpgradeChecklistTool extends ProjectAwareTool
                 'difficulty' => $path['difficulty'] ?? null,
                 'estimated_time_minutes' => $path['estimated_time_minutes'] ?? null,
                 'checklist' => $checklist,
+                'baseline_recommendations' => $this->baselineRecommendations(),
             ],
             [],
             $startedAt

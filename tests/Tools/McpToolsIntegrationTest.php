@@ -53,6 +53,8 @@ it('generates an upgrade checklist with sequence steps', function (): void {
     expect($response['ok'])->toBeTrue();
     expect($response['data']['checklist'])
         ->toBeArray();
+    expect($response['data']['baseline_recommendations'])
+        ->not->toBeEmpty();
 });
 
 it('generates an upgrade checklist with default version range', function (): void {
@@ -63,6 +65,8 @@ it('generates an upgrade checklist with default version range', function (): voi
     expect($response['ok'])->toBeTrue();
     expect($response['data']['from'])->toBe('7.x');
     expect($response['data']['to'])->toBe('8.0');
+    expect($response['data']['baseline_recommendations'])
+        ->not->toBeEmpty();
 });
 
 it('validates upgrade step completion for a breaking change', function (): void {

@@ -237,4 +237,20 @@ abstract class ProjectAwareTool extends AbstractTool
     {
         return sprintf('%d.x', $major);
     }
+
+    /**
+     * Recommendations to capture a baseline before performing upgrades.
+     *
+     * @return array<int, string>
+     */
+    protected function baselineRecommendations(): array
+    {
+        return [
+            'Run the full automated test suite and record its results to capture a pass/fail baseline.',
+            'Capture key performance metrics (response time, throughput, error rates) from monitoring or synthetic load tests.',
+            'Take a fresh backup of the database and any shared storage assets before applying changes.',
+            'Ensure the git working tree is clean and tag or note the current commit for quick rollback if needed.',
+            'Document current environment details (PHP version, extensions, queue workers, cron jobs) for comparison after the upgrade.',
+        ];
+    }
 }
