@@ -12,7 +12,17 @@ beforeEach(function () {
 
 afterEach(function () {
     if (is_dir($this->tempDir)) {
-        array_map('unlink', glob($this->tempDir . '/*'));
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($this->tempDir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($files as $file) {
+            if ($file->isDir()) {
+                rmdir($file->getRealPath());
+            } else {
+                unlink($file->getRealPath());
+            }
+        }
         rmdir($this->tempDir);
     }
 });
