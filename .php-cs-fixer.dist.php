@@ -15,7 +15,8 @@ return (new Config())
     ->setRules([
         '@PSR12' => true,
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
-        'trailing_comma_in_multiline' => ['elements' => ['arrays', 'arguments', 'parameters']],
+        'trailing_comma_in_multiline' => false,
+        'no_trailing_comma_in_singleline' => true,
         'strict_param' => true,
         'declare_strict_types' => true,
     ])
