@@ -9,6 +9,7 @@ use GoldenPathDigital\LaravelAscend\Analyzers\PatternAnalyzer;
 use GoldenPathDigital\LaravelAscend\Analyzers\ProjectAnalyzer;
 use GoldenPathDigital\LaravelAscend\Analyzers\ProjectContext;
 use GoldenPathDigital\LaravelAscend\Documentation\KnowledgeBaseService;
+use function base_path;
 
 abstract class ProjectAwareTool extends AbstractTool
 {
@@ -29,7 +30,7 @@ abstract class ProjectAwareTool extends AbstractTool
      */
     protected function createContext(array $payload): ProjectContext
     {
-        $root = $payload['project_root'] ?? getcwd();
+        $root = $payload['project_root'] ?? base_path();
 
         return new ProjectContext((string) $root);
     }

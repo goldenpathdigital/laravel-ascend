@@ -50,10 +50,38 @@ final class GetUpgradePathTool extends ProjectAwareTool
         }
 
         $context = $this->createContext($payload);
-        $target = isset($payload['target']) ? (string) $payload['target'] : null;
+        $target = $this->resolveTargetVersion($payload);
 
         $path = $this->projectAnalyzer->getUpgradePath($context, $target);
 
         return $this->success($path, [], $startedAt);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function resolveTargetVersion(array $payload): ?string
+    {
+        foreach (['target', 'target_version', 'target_laravel_version', 'to_version'] as $key) {
+            if (!isset($payload[$key])) {
+                continue;
+            }
+
+            $value = $payload[$key];
+
+            if (is_string($value)) {
+                $value = trim($value);
+            } elseif (is_int($value)) {
+                $value = (string) $value;
+            } else {
+                continue;
+            }
+
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
     }
 }

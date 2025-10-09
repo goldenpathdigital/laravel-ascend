@@ -60,6 +60,19 @@ test('get upgrade path tool handles invalid versions', function () {
     expect($result)->toHaveKey('error');
 });
 
+test('get upgrade path tool respects target_version parameter', function () {
+    $tool = new GetUpgradePathTool($this->knowledgeBase);
+
+    $result = $tool->execute([
+        'project_root' => __DIR__ . '/../fixtures/project-basic',
+        'target_version' => '10',
+    ]);
+
+    expect($result['ok'])->toBeTrue();
+    expect($result['data']['upgrade_path']['identifier'])->toBe('7-to-10');
+    expect($result['data']['upgrade_path']['target'])->toBe('10.x');
+});
+
 test('check php compatibility tool validates requirements', function () {
     $tool = new CheckPhpCompatibilityTool($this->knowledgeBase);
 
