@@ -67,18 +67,26 @@ class RegisterCommand extends Command
         $this->info('Available MCP configuration targets:');
         $this->newLine();
 
-        $choices = [];
+        $targetChoices = [];
+        $targetLookupByKey = [];
+        $targetLookupByLabel = [];
+
         foreach ($allTargets as $index => $target) {
-            $choices[] = $target['label'];
+            $key = (string) $index;
+            $targetChoices[$key] = $target['label'];
+            $targetLookupByKey[$key] = $target;
+            $targetLookupByLabel[$target['label']] = $target;
         }
 
         $selected = $this->choice(
             'Select targets to configure (comma-separated numbers, or "all"):',
-            array_merge(['all', 'none'], $choices),
+            ['all' => 'All targets', 'none' => 'None'] + $targetChoices,
             'all',
             null,
             true,
         );
+
+        $selected = is_array($selected) ? $selected : [$selected];
 
         if (in_array('none', $selected, true)) {
             return [];
@@ -89,9 +97,14 @@ class RegisterCommand extends Command
         }
 
         $selectedTargets = [];
-        foreach ($allTargets as $index => $target) {
-            if (in_array($target['label'], $selected, true)) {
-                $selectedTargets[] = $target;
+        foreach ($selected as $choice) {
+            if (isset($targetLookupByKey[$choice])) {
+                $selectedTargets[] = $targetLookupByKey[$choice];
+                continue;
+            }
+
+            if (isset($targetLookupByLabel[$choice])) {
+                $selectedTargets[] = $targetLookupByLabel[$choice];
             }
         }
 
