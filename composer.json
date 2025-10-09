@@ -3,6 +3,14 @@
   "description": "Ascend is an MCP-compatible server and toolkit that upgrades Laravel apps with structured docs and analyzers.",
   "type": "library",
   "license": "MIT",
+  "authors": [
+    {
+      "name": "Golden Path Digital",
+      "email": "ascend@goldenpathdigital.com",
+      "homepage": "https://goldenpathdigital.com",
+      "role": "Maintainer"
+    }
+  ],
   "keywords": [
     "laravel",
     "ascend",
