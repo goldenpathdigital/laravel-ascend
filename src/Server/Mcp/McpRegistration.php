@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace GoldenPathDigital\LaravelAscend\Server\Mcp;
 
 use GoldenPathDigital\LaravelAscend\Server\Mcp\Config\FileWriter;
+use GoldenPathDigital\LaravelAscend\Server\Mcp\Config\TomlFileWriter;
 
 final class McpRegistration
 {
@@ -18,7 +19,7 @@ final class McpRegistration
     }
 
     /**
-     * @param array<int, array{path:string, configKey:string}>|null $targets
+     * @param array<int, array{path:string, configKey:string, format?:string, label?:string}>|null $targets
      *
      * @return array<int, string> paths written
      */
@@ -33,12 +34,30 @@ final class McpRegistration
         $written = [];
 
         foreach ($targets as $target) {
-            $writer = new FileWriter($target['path'], $target['configKey']);
-            $writer->addServer('laravel-ascend', $command[0], array_slice($command, 1));
-            $written[] = $writer->save();
+            $format = $target['format'] ?? 'json';
+            
+            if ($format === 'toml') {
+                $writer = new TomlFileWriter($target['path']);
+                $writer->addServer('laravel-ascend', $command[0], array_slice($command, 1));
+                $written[] = $writer->save();
+            } else {
+                $writer = new FileWriter($target['path'], $target['configKey']);
+                $writer->addServer('laravel-ascend', $command[0], array_slice($command, 1));
+                $written[] = $writer->save();
+            }
         }
 
         return array_values(array_unique($written));
+    }
+
+    /**
+     * Get available targets without registering
+     *
+     * @return array<int, array{path:string, configKey:string, format?:string, label:string}>
+     */
+    public function determineAvailableTargets(?string $projectRoot = null): array
+    {
+        return $this->determineTargets($projectRoot);
     }
 
     private function resolveConsoleEntryPoint(): string
@@ -51,7 +70,7 @@ final class McpRegistration
     }
 
     /**
-     * @return array<int, array{path:string, configKey:string}>
+     * @return array<int, array{path:string, configKey:string, format?:string, label:string}>
      */
     private function determineTargets(?string $projectRoot): array
     {
@@ -63,6 +82,7 @@ final class McpRegistration
             $targets[] = [
                 'path' => $override,
                 'configKey' => 'servers',
+                'label' => 'Custom (VSCODE_MCP_CONFIG)',
             ];
 
             return $targets;
@@ -74,16 +94,19 @@ final class McpRegistration
             $targets[] = [
                 'path' => $projectRoot . '/.vscode/mcp.json',
                 'configKey' => 'servers',
+                'label' => 'VSCode (Project)',
             ];
 
             $targets[] = [
                 'path' => $projectRoot . '/.cursor/mcp.json',
                 'configKey' => 'mcpServers',
+                'label' => 'Cursor (Project)',
             ];
 
             $targets[] = [
                 'path' => $projectRoot . '/.junie/mcp/mcp.json',
                 'configKey' => 'servers',
+                'label' => 'Junie (Project)',
             ];
         }
 
@@ -95,26 +118,39 @@ final class McpRegistration
             $targets[] = [
                 'path' => $home . '/.config/Code/User/mcp.json',
                 'configKey' => 'servers',
+                'label' => 'VSCode (Global)',
             ];
 
             $targets[] = [
                 'path' => $home . '/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json',
                 'configKey' => 'mcpServers',
+                'label' => 'Cline (Global)',
             ];
 
             $targets[] = [
                 'path' => $home . '/.claude/mcp/mcp.json',
                 'configKey' => 'servers',
+                'label' => 'Claude Desktop (Legacy)',
             ];
 
             $targets[] = [
                 'path' => $home . '/.config/Claude/mcp.json',
                 'configKey' => 'servers',
+                'label' => 'Claude Desktop',
             ];
 
             $targets[] = [
                 'path' => $home . '/.config/Codex/mcp.json',
                 'configKey' => 'servers',
+                'label' => 'Codex (JSON)',
+            ];
+            
+            // Codex TOML configuration
+            $targets[] = [
+                'path' => $home . '/.codex/config.toml',
+                'configKey' => 'mcp.servers',
+                'format' => 'toml',
+                'label' => 'Codex (TOML)',
             ];
         }
 
