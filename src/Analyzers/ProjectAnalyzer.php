@@ -62,7 +62,7 @@ final class ProjectAnalyzer
 
         $targetMajor = $target !== null
             ? $this->extractMajorVersion($target)
-            : $this->determineLatestSupportedMajor();
+            : $this->determineNextSupportedMajor($currentMajor);
 
         $pathIdentifier = sprintf('%d-to-%d', $currentMajor, $targetMajor);
 
@@ -179,22 +179,28 @@ final class ProjectAnalyzer
         return 0;
     }
 
-    private function determineLatestSupportedMajor(): int
+    private function determineNextSupportedMajor(int $currentMajor): int
     {
-        $versions = $this->knowledgeBase->listBreakingChangeIdentifiers();
+        $identifiers = $this->knowledgeBase->listUpgradePathIdentifiers();
+        $candidates = [];
 
-        if ($versions === []) {
-            return 0;
-        }
+        foreach ($identifiers as $identifier) {
+            if (preg_match('/^(\d+)-to-(\d+)$/', $identifier, $matches) !== 1) {
+                continue;
+            }
 
-        // Extract major version numbers from identifiers like "laravel-11"
-        $majors = [];
-        foreach ($versions as $identifier) {
-            if (preg_match('/laravel-(\d+)/', $identifier, $matches)) {
-                $majors[] = (int) $matches[1];
+            $from = (int) $matches[1];
+            $to = (int) $matches[2];
+
+            if ($from === $currentMajor && $to > $currentMajor) {
+                $candidates[] = $to;
             }
         }
 
-        return $majors !== [] ? max($majors) : 0;
+        if ($candidates === []) {
+            return $currentMajor;
+        }
+
+        return min($candidates);
     }
 }

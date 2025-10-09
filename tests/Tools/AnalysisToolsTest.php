@@ -48,6 +48,18 @@ test('get upgrade path tool finds valid path', function () {
     expect($result['data']['upgrade_path'])->toHaveKey('identifier');
 });
 
+test('get upgrade path tool defaults to next major version', function () {
+    $tool = new GetUpgradePathTool($this->knowledgeBase);
+
+    $result = $tool->execute([
+        'project_root' => __DIR__ . '/../fixtures/project-basic',
+    ]);
+
+    expect($result['ok'])->toBeTrue();
+    expect($result['data']['upgrade_path']['identifier'])->toBe('7-to-8');
+    expect($result['data']['upgrade_path']['target'])->toBe('8.x');
+});
+
 test('get upgrade path tool handles invalid versions', function () {
     $tool = new GetUpgradePathTool($this->knowledgeBase);
 
@@ -66,6 +78,19 @@ test('get upgrade path tool respects target_version parameter', function () {
     $result = $tool->execute([
         'project_root' => __DIR__ . '/../fixtures/project-basic',
         'target_version' => '10',
+    ]);
+
+    expect($result['ok'])->toBeTrue();
+    expect($result['data']['upgrade_path']['identifier'])->toBe('7-to-10');
+    expect($result['data']['upgrade_path']['target'])->toBe('10.x');
+});
+
+test('get upgrade path tool respects camelCase target parameter', function () {
+    $tool = new GetUpgradePathTool($this->knowledgeBase);
+
+    $result = $tool->execute([
+        'project_root' => __DIR__ . '/../fixtures/project-basic',
+        'targetVersion' => '10',
     ]);
 
     expect($result['ok'])->toBeTrue();

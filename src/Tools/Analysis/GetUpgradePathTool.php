@@ -62,7 +62,17 @@ final class GetUpgradePathTool extends ProjectAwareTool
      */
     private function resolveTargetVersion(array $payload): ?string
     {
-        foreach (['target', 'target_version', 'target_laravel_version', 'to_version'] as $key) {
+        $aliases = [
+            'target',
+            'target_version',
+            'targetVersion',
+            'target_laravel_version',
+            'targetLaravelVersion',
+            'to_version',
+            'toVersion',
+        ];
+
+        foreach ($aliases as $key) {
             if (!isset($payload[$key])) {
                 continue;
             }
