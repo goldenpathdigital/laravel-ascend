@@ -27,7 +27,7 @@ final class McpRequestHandler
             return $this->encodeError(null, -32700, 'Parse error: ' . json_last_error_msg());
         }
 
-        if (is_array($decoded) && array_is_list($decoded)) {
+        if (is_array($decoded) && $this->isArrayList($decoded)) {
             $responses = array_values(array_filter(
                 array_map(fn ($request) => $this->handleRequest($request), $decoded),
                 static fn ($response) => $response !== null,
@@ -127,6 +127,27 @@ final class McpRequestHandler
         if ($method === 'tools/listChanged') {
             return;
         }
+    }
+
+    /**
+     * Polyfill for array_is_list (PHP 8.1+)
+     *
+     * @param array<mixed> $array
+     */
+    private function isArrayList(array $array): bool
+    {
+        if (function_exists('array_is_list')) {
+            return array_is_list($array);
+        }
+
+        $i = 0;
+        foreach ($array as $k => $v) {
+            if ($k !== $i++) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
