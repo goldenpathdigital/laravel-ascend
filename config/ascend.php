@@ -20,6 +20,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | MCP Server Runtime
+    |--------------------------------------------------------------------------
+    |
+    | Controls how long the artisan MCP server process is allowed to run before
+    | PHP terminates it. Since this command is intended for local development,
+    | a generous default keeps the stdio connection alive while still providing
+    | a safeguard against runaway processes.
+    |
+    */
+    'server' => [
+        'max_runtime' => (int) env('ASCEND_SERVER_MAX_RUNTIME', 900), // 15 minutes
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Documentation Sources
     |--------------------------------------------------------------------------
     |

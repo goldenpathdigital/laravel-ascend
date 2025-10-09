@@ -12,6 +12,8 @@ use Illuminate\Console\Command;
 use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
+use function config;
+use function set_time_limit;
 
 class ServeCommand extends Command
 {
@@ -28,6 +30,14 @@ class ServeCommand extends Command
     {
         $knowledgeBasePath = $this->option('kb-path');
         $server = AscendServer::createDefault($knowledgeBasePath ?: null);
+
+        $maxRuntime = (int) config('ascend.server.max_runtime', 900);
+
+        if ($maxRuntime <= 0) {
+            set_time_limit(0);
+        } else {
+            set_time_limit($maxRuntime);
+        }
 
         $useWebsocket = (bool) $this->option('websocket');
         $forceStdio = (bool) $this->option('stdio');
