@@ -97,7 +97,9 @@ final class AscendServer
     public function getSupportedProtocolVersions(): array
     {
         return [
-            '2025-06-18',
+            '2025-06-18',  // Current MCP specification version
+            '2024-11-05',  // Legacy version for backward compatibility
+            '2024-10-07',  // Additional legacy support
         ];
     }
 

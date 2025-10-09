@@ -137,11 +137,20 @@ final class McpRequestHandler
         $requestedVersion = $params['protocolVersion'] ?? null;
         $supported = $this->ascendServer->getSupportedProtocolVersions();
 
-        if ($requestedVersion !== null && !in_array($requestedVersion, $supported, true)) {
-            throw new \InvalidArgumentException('Unsupported protocol version.');
+        // If a version is requested, validate it's in a reasonable format (YYYY-MM-DD)
+        // and accept it even if not explicitly in our list for forward compatibility
+        if ($requestedVersion !== null) {
+            // Check if it matches the MCP date-based version format
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $requestedVersion)) {
+                throw new \InvalidArgumentException('Invalid protocol version format. Expected YYYY-MM-DD format.');
+            }
+            // Use the requested version for forward/backward compatibility
+            $protocolVersion = $requestedVersion;
+        } else {
+            // If no version requested, use our most recent supported version
+            $protocolVersion = $supported[0];
         }
 
-        $protocolVersion = $requestedVersion ?? $supported[0];
         $this->initialized = true;
 
         return [
@@ -197,10 +206,11 @@ final class McpRequestHandler
         $result = $this->ascendServer->callTool($toolName, $arguments);
         $isError = isset($result['ok']) ? $result['ok'] === false : false;
 
+        // Convert result to text format as required by MCP spec
         $content = [
             [
-                'type' => 'json',
-                'data' => $result,
+                'type' => 'text',
+                'text' => json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
             ],
         ];
 
