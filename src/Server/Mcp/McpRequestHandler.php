@@ -79,6 +79,7 @@ final class McpRequestHandler
                 'tools/list' => $this->listTools($params),
                 'tools/call' => $this->callTool($params),
                 'resources/list' => $this->listResources($params),
+                'resources/read' => $this->readResource($params),
                 'prompts/list' => $this->listPrompts($params),
                 default => null,
             };
@@ -236,6 +237,37 @@ final class McpRequestHandler
 
         return [
             'resources' => $this->ascendServer->describeResources(),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @return array<string, mixed>
+     */
+    private function readResource(array $params): array
+    {
+        $this->ensureInitialized();
+
+        $uri = $params['uri'] ?? null;
+
+        if (!is_string($uri)) {
+            throw new \InvalidArgumentException('Parameter "uri" is required.');
+        }
+
+        $resource = $this->ascendServer->readResource($uri);
+
+        if ($resource === null) {
+            throw new \RuntimeException("Resource not found: {$uri}");
+        }
+
+        return [
+            'contents' => [
+                [
+                    'uri' => $resource['uri'] ?? $uri,
+                    'mimeType' => $resource['mimeType'] ?? 'text/plain',
+                    'text' => $resource['content'] ?? '',
+                ],
+            ],
         ];
     }
 

@@ -242,6 +242,22 @@ final class AscendServer
     }
 
     /**
+     * Read a specific resource by URI
+     *
+     * @return array<string, mixed>|null
+     */
+    public function readResource(string $uri): ?array
+    {
+        foreach ($this->resourceDescriptors as $descriptor) {
+            if (($descriptor['uri'] ?? null) === $uri) {
+                return $descriptor;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @return array<int, array<string, mixed>>
      */
     public function describePrompts(): array
