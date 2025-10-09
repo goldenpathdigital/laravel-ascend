@@ -45,8 +45,11 @@ These guidelines help ensure safe, systematic Laravel framework upgrades.
 - Inspect tool schemas via `describe_tools` before calling anything; confirm required parameters.
 - Call tools only when information is missing from the current discussion; reference earlier outputs instead of re-running them.
 - Summarise tool results in a few actionable bullets and persist key identifiers (e.g., upgrade path IDs) for later steps.
+- Defer expensive file-scanning tools (e.g., pattern searches, Blade scans) until you are ready to make code changes in that area of the plan.
+- When you do run scans, narrow their scope (specific directories/globs) so outputs stay focused and manageable.
 - Avoid pasting entire JSON payloads into replies—extract only the fields needed to progress.
 - Note when results become stale (project updated, dependencies changed) and refresh tools selectively.
+- Record each tool invocation in your working notes (name, inputs, summary) to avoid redundant calls later in the process.
 
 ## Upgrade Process
 

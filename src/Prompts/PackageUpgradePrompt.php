@@ -41,7 +41,9 @@ Managing package compatibility during Laravel framework upgrades.
 - Review tool input schemas (`describe_tools`) and reuse prior outputs instead of calling tools redundantly.
 - Summarise compatibility checks; store package/version notes separately so you can reference them without re-running tools.
 - Only request large listings (e.g., dependency scans) when necessary, and trim responses to the packages being discussed.
+- Prefer targeted follow-up calls (single package, narrowed filters) rather than re-running broad scans unless dependencies have changed.
 - Track when composer.json or lock files change and refresh related tool results intentionally.
+- Maintain a compatibility log (package, constraint, decision) so you can progress without repeating previous checks.
 
 ## Package Compatibility Strategy
 

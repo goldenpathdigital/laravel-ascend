@@ -44,7 +44,10 @@ Use these tools to identify patterns in your codebase:
 - Check tool schemas first to understand parameters and available data; avoid exploratory calls that duplicate existing knowledge.
 - When a tool returns data, summarise the actionable fields and reference the summary instead of pasting the full payload.
 - Track which breaking changes have already been analysed to prevent re-running the same tool with identical inputs.
+- Schedule file-scanning tools (pattern searches, Blade scans) for the plan phase where remediation is performed—collect the data close to when you will act on it.
+- Narrow scan scopes (directories, file globs, identifier filters) to only the code paths you intend to modify next.
 - If project files change, note the delta and only re-run the tools affected by those changes.
+- Keep a running checklist of investigated breaking changes so you can reference the findings instead of repeating lookups.
 
 ## Common Breaking Change Patterns
 

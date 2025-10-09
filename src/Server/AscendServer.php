@@ -102,8 +102,10 @@ final class AscendServer
             '- Call `describeTools` to inspect schemas and required parameters before invoking anything.',
             '- Only invoke tools when the answer is not already available in the current context.',
             '- Avoid re-running a tool unless new inputs would change the result; reference prior outputs instead.',
+            '- Capture summaries/identifiers from each tool call in your working notes and reuse them instead of re-fetching.',
             '- Summarise tool responses concisely (≤5 bullet points) and store key identifiers for reuse.',
             '- Trim or summarise large outputs before replying to keep the conversation context lean.',
+            '- Build or update your plan before launching tool calls so heavier scans happen precisely when their results will be applied.',
         ]);
     }
 
