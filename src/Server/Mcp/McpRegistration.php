@@ -13,7 +13,7 @@ final class McpRegistration
     private $binaryPath;
 
     public function __construct(
-        string $binaryPath,
+        string $binaryPath
     ) {
         $this->binaryPath = $binaryPath;
     }

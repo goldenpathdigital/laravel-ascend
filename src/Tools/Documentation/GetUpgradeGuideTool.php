@@ -14,7 +14,7 @@ final class GetUpgradeGuideTool extends AbstractTool
     private $knowledgeBase;
 
     public function __construct(
-        KnowledgeBaseService $knowledgeBase,
+        KnowledgeBaseService $knowledgeBase
     ) {
         $this->knowledgeBase = $knowledgeBase;
     }

@@ -34,7 +34,7 @@ final class AscendServer
         KnowledgeBaseService $knowledgeBase,
         ToolRegistry $toolRegistry,
         array $resourceDescriptors = [],
-        array $promptDescriptors = [],
+        array $promptDescriptors = []
     ) {
         $this->knowledgeBase = $knowledgeBase;
         $this->toolRegistry = $toolRegistry;
@@ -226,10 +226,10 @@ final class AscendServer
                     'name' => $tool->getName(),
                     'description' => $tool->getDescription(),
                     'inputSchema' => $tool->getInputSchema(),
-                    'annotations' => $tool->getAnnotations() ?: (object) [],
+                    'annotations' => $tool->getAnnotations() ?: (object) []
                 ];
             },
-            $registry->list(),
+            $registry->list()
         );
     }
 
@@ -309,7 +309,7 @@ final class AscendServer
         try {
             $iterator = new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS),
-                RecursiveIteratorIterator::SELF_FIRST,
+                RecursiveIteratorIterator::SELF_FIRST
             );
             $iterator->setMaxDepth(5); // Limit recursion depth
         } catch (\Exception $e) {
@@ -434,7 +434,7 @@ final class AscendServer
         try {
             $iterator = new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS),
-                RecursiveIteratorIterator::SELF_FIRST,
+                RecursiveIteratorIterator::SELF_FIRST
             );
             $iterator->setMaxDepth(5); // Limit recursion depth
         } catch (\Exception $e) {

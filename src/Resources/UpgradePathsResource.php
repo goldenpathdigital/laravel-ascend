@@ -13,7 +13,7 @@ final class UpgradePathsResource implements ResourceInterface
     private $knowledgeBase;
 
     public function __construct(
-        KnowledgeBaseService $knowledgeBase,
+        KnowledgeBaseService $knowledgeBase
     ) {
         $this->knowledgeBase = $knowledgeBase;
     }

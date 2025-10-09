@@ -12,7 +12,7 @@ class CacheException extends RuntimeException
     {
         return new self(sprintf(
             'Invalid cache key "%s". Keys must contain only alphanumeric characters, underscores, hyphens, and dots.',
-            $key,
+            $key
         ));
     }
 
@@ -22,7 +22,7 @@ class CacheException extends RuntimeException
             'Cache value for key "%s" is too large (%d bytes). Maximum allowed size is %d bytes.',
             $key,
             $size,
-            $maxSize,
+            $maxSize
         ));
     }
 }

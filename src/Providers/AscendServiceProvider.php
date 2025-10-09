@@ -15,7 +15,7 @@ class AscendServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(
             __DIR__ . '/../../config/ascend.php',
-            'ascend',
+            'ascend'
         );
 
         // Register AscendServer as singleton for facade support

@@ -18,7 +18,7 @@ abstract class ProjectAwareTool extends AbstractTool
     protected ProjectAnalyzer $projectAnalyzer;
 
     public function __construct(
-        KnowledgeBaseService $knowledgeBase,
+        KnowledgeBaseService $knowledgeBase
     ) {
         $this->knowledgeBase = $knowledgeBase;
         $this->projectAnalyzer = new ProjectAnalyzer($knowledgeBase);

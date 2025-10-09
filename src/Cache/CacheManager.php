@@ -28,7 +28,7 @@ final class CacheManager
     public function __construct(
         int $defaultTtl = self::DEFAULT_TTL,
         int $maxCacheSize = self::DEFAULT_MAX_SIZE,
-        int $maxValueSize = self::DEFAULT_MAX_VALUE_SIZE,
+        int $maxValueSize = self::DEFAULT_MAX_VALUE_SIZE
     ) {
         $this->defaultTtl = $defaultTtl;
         $this->maxCacheSize = $maxCacheSize;

@@ -32,7 +32,7 @@ final class FileWriter
     public function __construct(
         string $filePath,
         string $configKey = 'servers',
-        ?LoggerInterface $logger = null,
+        ?LoggerInterface $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();
         $this->validateFilePath($filePath);

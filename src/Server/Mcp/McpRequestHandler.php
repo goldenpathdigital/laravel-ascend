@@ -14,7 +14,7 @@ final class McpRequestHandler
     private bool $initialized = false;
 
     public function __construct(
-        AscendServer $ascendServer,
+        AscendServer $ascendServer
     ) {
         $this->ascendServer = $ascendServer;
     }

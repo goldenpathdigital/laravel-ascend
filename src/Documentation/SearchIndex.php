@@ -116,7 +116,7 @@ final class SearchIndex
                     (string) ($change['severity'] ?? ''),
                     (string) ($change['category'] ?? ''),
                     (string) ($change['version'] ?? ''),
-                ],
+                ]
             );
         }
 
@@ -139,8 +139,8 @@ final class SearchIndex
                     [
                         (string) ($pattern['category'] ?? ''),
                         (string) ($pattern['complexity'] ?? ''),
-                    ],
-                ),
+                    ]
+                )
             );
         }
 
@@ -159,7 +159,7 @@ final class SearchIndex
         string $title,
         string $summary,
         array $metadata,
-        array $additionalTokens = [],
+        array $additionalTokens = []
     ): array {
         $tokenSource = strtolower(
             trim(

@@ -19,7 +19,7 @@ final class KnowledgeBaseService
 
     public function __construct(
         DocumentationLoader $loader,
-        SearchIndex $searchIndex,
+        SearchIndex $searchIndex
     ) {
         $this->loader = $loader;
         $this->searchIndex = $searchIndex;

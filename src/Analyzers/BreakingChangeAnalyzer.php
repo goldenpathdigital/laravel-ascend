@@ -16,7 +16,7 @@ final class BreakingChangeAnalyzer
 
     public function __construct(
         KnowledgeBaseService $knowledgeBase,
-        FilesystemScanner $scanner,
+        FilesystemScanner $scanner
     ) {
         $this->knowledgeBase = $knowledgeBase;
         $this->scanner = $scanner;

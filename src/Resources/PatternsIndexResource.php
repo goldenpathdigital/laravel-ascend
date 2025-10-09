@@ -13,7 +13,7 @@ final class PatternsIndexResource implements ResourceInterface
     private $knowledgeBase;
 
     public function __construct(
-        KnowledgeBaseService $knowledgeBase,
+        KnowledgeBaseService $knowledgeBase
     ) {
         $this->knowledgeBase = $knowledgeBase;
     }

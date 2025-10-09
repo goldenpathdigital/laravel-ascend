@@ -16,7 +16,7 @@ final class KnowledgeBaseSummaryResource implements ResourceInterface
     private ?array $cachedArray = null;
 
     public function __construct(
-        KnowledgeBaseService $knowledgeBase,
+        KnowledgeBaseService $knowledgeBase
     ) {
         $this->knowledgeBase = $knowledgeBase;
     }
