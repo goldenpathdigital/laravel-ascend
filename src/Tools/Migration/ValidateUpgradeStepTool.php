@@ -24,12 +24,21 @@ final class ValidateUpgradeStepTool extends ProjectAwareTool
         $startedAt = microtime(true);
         $context = $this->createContext($payload);
 
-        $from = isset($payload['context']['from']) ? (string) $payload['context']['from'] : ($payload['from'] ?? '');
-        $to = isset($payload['context']['to']) ? (string) $payload['context']['to'] : ($payload['to'] ?? '');
+        $range = $this->resolveUpgradeRange($context, $payload);
+        $from = $range['from'];
+        $to = $range['to'];
         $changeId = isset($payload['change']) ? (string) $payload['change'] : '';
 
-        if ($from === '' || $to === '' || $changeId === '') {
-            return $this->error('Parameters "from", "to", and "change" are required.', [], $startedAt, 'invalid_request');
+        if ($changeId === '') {
+            return $this->error('Parameter "change" is required.', [], $startedAt, 'invalid_request');
+        }
+
+        if ($from === '' || $to === '') {
+            return $this->error('Unable to determine upgrade range. Provide "from" and "to" versions.', [], $startedAt, 'invalid_request');
+        }
+
+        if ($from === $to) {
+            return $this->error('Current version already matches target version.', [], $startedAt, 'invalid_request');
         }
 
         $scanner = $this->createScanner($context);
@@ -44,6 +53,8 @@ final class ValidateUpgradeStepTool extends ProjectAwareTool
         return $this->success(
             [
                 'change' => $changeId,
+                'from' => $from,
+                'to' => $to,
                 'validated' => $changeMatches === [],
                 'remaining_matches' => $changeMatches,
             ],

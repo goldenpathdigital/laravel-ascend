@@ -55,6 +55,16 @@ it('generates an upgrade checklist with sequence steps', function (): void {
         ->toBeArray();
 });
 
+it('generates an upgrade checklist with default version range', function (): void {
+    $response = $this->server->callTool('generate_upgrade_checklist', [
+        'project_root' => $this->projectRoot,
+    ]);
+
+    expect($response['ok'])->toBeTrue();
+    expect($response['data']['from'])->toBe('7.x');
+    expect($response['data']['to'])->toBe('8.0');
+});
+
 it('validates upgrade step completion for a breaking change', function (): void {
     $response = $this->server->callTool('validate_upgrade_step', [
         'project_root' => $this->projectRoot,
@@ -65,6 +75,27 @@ it('validates upgrade step completion for a breaking change', function (): void 
 
     expect($response['ok'])->toBeTrue();
     expect($response['data']['validated'])->toBeFalse();
+});
+
+it('validates upgrade step using default version range', function (): void {
+    $response = $this->server->callTool('validate_upgrade_step', [
+        'project_root' => $this->projectRoot,
+        'change' => 'php-version-requirement',
+    ]);
+
+    expect($response['ok'])->toBeTrue();
+    expect($response['data']['from'])->toBe('7.x');
+    expect($response['data']['to'])->toBe('8.x');
+});
+
+it('scans for breaking changes using default version range', function (): void {
+    $response = $this->server->callTool('scan_breaking_changes', [
+        'project_root' => $this->projectRoot,
+    ]);
+
+    expect($response['ok'])->toBeTrue();
+    expect($response['data']['from'])->toBe('7.x');
+    expect($response['data']['to'])->toBe('8.x');
 });
 
 it('checks package compatibility against a target', function (): void {

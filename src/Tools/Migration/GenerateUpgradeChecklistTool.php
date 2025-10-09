@@ -23,11 +23,16 @@ final class GenerateUpgradeChecklistTool extends ProjectAwareTool
         $startedAt = microtime(true);
         $context = $this->createContext($payload);
 
-        $from = isset($payload['from']) ? (string) $payload['from'] : '';
-        $to = isset($payload['to']) ? (string) $payload['to'] : '';
+        $range = $this->resolveUpgradeRange($context, $payload);
+        $from = $range['from'];
+        $to = $range['to'];
 
         if ($from === '' || $to === '') {
-            return $this->error('Parameters "from" and "to" are required.', [], $startedAt, 'invalid_request');
+            return $this->error('Unable to determine upgrade range. Provide "from" and "to" versions.', [], $startedAt, 'invalid_request');
+        }
+
+        if ($from === $to) {
+            return $this->error('Current version already matches target version.', [], $startedAt, 'invalid_request');
         }
 
         $path = $this->knowledgeBase->getUpgradePathByVersions($from, $to);
