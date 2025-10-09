@@ -40,6 +40,14 @@ These guidelines help ensure safe, systematic Laravel framework upgrades.
 4. **Update dependencies first** - Ensure all composer packages are compatible with the target Laravel version
 5. **Back up your project** - Always have a backup or use version control before starting
 
+## Context Discipline
+
+- Inspect tool schemas via `describe_tools` before calling anything; confirm required parameters.
+- Call tools only when information is missing from the current discussion; reference earlier outputs instead of re-running them.
+- Summarise tool results in a few actionable bullets and persist key identifiers (e.g., upgrade path IDs) for later steps.
+- Avoid pasting entire JSON payloads into replies—extract only the fields needed to progress.
+- Note when results become stale (project updated, dependencies changed) and refresh tools selectively.
+
 ## Upgrade Process
 
 ### Phase 1: Analysis

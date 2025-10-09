@@ -97,6 +97,13 @@ final class AscendServer
             '- Back up the database and storage assets.',
             '- Tag or note the current git commit, ensuring a clean working tree.',
             '- Document the active runtime environment (PHP version, extensions, queues, schedulers).',
+            '',
+            'Tool usage discipline:',
+            '- Call `describeTools` to inspect schemas and required parameters before invoking anything.',
+            '- Only invoke tools when the answer is not already available in the current context.',
+            '- Avoid re-running a tool unless new inputs would change the result; reference prior outputs instead.',
+            '- Summarise tool responses concisely (≤5 bullet points) and store key identifiers for reuse.',
+            '- Trim or summarise large outputs before replying to keep the conversation context lean.',
         ]);
     }
 

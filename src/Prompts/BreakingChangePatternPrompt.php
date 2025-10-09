@@ -39,6 +39,13 @@ Use these tools to identify patterns in your codebase:
 - `scan_breaking_changes` - Identify breaking changes for a version
 - `get_breaking_change_details` - Get detailed migration instructions
 
+## Context Discipline
+
+- Check tool schemas first to understand parameters and available data; avoid exploratory calls that duplicate existing knowledge.
+- When a tool returns data, summarise the actionable fields and reference the summary instead of pasting the full payload.
+- Track which breaking changes have already been analysed to prevent re-running the same tool with identical inputs.
+- If project files change, note the delta and only re-run the tools affected by those changes.
+
 ## Common Breaking Change Patterns
 
 ### 1. Method Signature Changes

@@ -36,6 +36,13 @@ Managing package compatibility during Laravel framework upgrades.
 
 **Always update packages before or alongside Laravel upgrades** to avoid compatibility conflicts.
 
+## Context Discipline
+
+- Review tool input schemas (`describe_tools`) and reuse prior outputs instead of calling tools redundantly.
+- Summarise compatibility checks; store package/version notes separately so you can reference them without re-running tools.
+- Only request large listings (e.g., dependency scans) when necessary, and trim responses to the packages being discussed.
+- Track when composer.json or lock files change and refresh related tool results intentionally.
+
 ## Package Compatibility Strategy
 
 ### 1. First-Party Laravel Packages
