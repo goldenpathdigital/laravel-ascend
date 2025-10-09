@@ -73,16 +73,23 @@ final class McpRequestHandler
         }
 
         try {
-            $result = match ($method) {
-                'initialize' => $this->initialize($params),
-                'ping' => ['status' => 'ok'],
-                'tools/list' => $this->listTools($params),
-                'tools/call' => $this->callTool($params),
-                'resources/list' => $this->listResources($params),
-                'resources/read' => $this->readResource($params),
-                'prompts/list' => $this->listPrompts($params),
-                default => null,
-            };
+            if ($method === 'initialize') {
+                $result = $this->initialize($params);
+            } elseif ($method === 'ping') {
+                $result = ['status' => 'ok'];
+            } elseif ($method === 'tools/list') {
+                $result = $this->listTools($params);
+            } elseif ($method === 'tools/call') {
+                $result = $this->callTool($params);
+            } elseif ($method === 'resources/list') {
+                $result = $this->listResources($params);
+            } elseif ($method === 'resources/read') {
+                $result = $this->readResource($params);
+            } elseif ($method === 'prompts/list') {
+                $result = $this->listPrompts($params);
+            } else {
+                $result = null;
+            }
         } catch (\Throwable $exception) {
             return $this->errorResponse($id, -32603, $exception->getMessage());
         }
@@ -99,9 +106,10 @@ final class McpRequestHandler
     }
 
     /**
+     * @param mixed $id
      * @return array<string, mixed>
      */
-    private function errorResponse(mixed $id, int $code, string $message): array
+    private function errorResponse($id, int $code, string $message): array
     {
         return [
             'jsonrpc' => '2.0',
@@ -113,12 +121,18 @@ final class McpRequestHandler
         ];
     }
 
-    private function encodeError(mixed $id, int $code, string $message): string
+    /**
+     * @param mixed $id
+     */
+    private function encodeError($id, int $code, string $message): string
     {
         return json_encode($this->errorResponse($id, $code, $message), JSON_THROW_ON_ERROR);
     }
 
-    private function dispatchNotification(string $method, mixed $params): void
+    /**
+     * @param mixed $params
+     */
+    private function dispatchNotification(string $method, $params): void
     {
         if ($method === 'ping') {
             return;

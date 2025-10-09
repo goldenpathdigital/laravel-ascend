@@ -134,7 +134,7 @@ final class ComposerInspector
             }
 
             return $decoded;
-        } catch (\JsonException) {
+        } catch (\JsonException $exception) {
             return [];
         }
     }

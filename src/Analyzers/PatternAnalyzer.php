@@ -80,7 +80,7 @@ final class PatternAnalyzer
                         'matches' => $matches,
                     ];
                 }
-            } catch (DocumentationException) {
+            } catch (DocumentationException $exception) {
                 continue;
             }
         }
