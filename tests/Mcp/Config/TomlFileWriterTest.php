@@ -45,11 +45,11 @@ test('toml writer preserves existing content', function () {
     $writer->save();
 
     $content = file_get_contents($configPath);
-    
+
     // Should preserve original content
     expect($content)->toContain('model = "gpt-4"');
     expect($content)->toContain('temperature = 0.7');
-    
+
     // Should add MCP servers
     expect($content)->toContain('# MCP Servers Configuration');
     expect($content)->toContain('[mcp.servers.laravel-ascend]');
@@ -79,14 +79,14 @@ TOML;
     $writer->save();
 
     $content = file_get_contents($configPath);
-    
+
     // Should preserve model
     expect($content)->toContain('model = "gpt-4"');
-    
+
     // Should have new server
     expect($content)->toContain('[mcp.servers.new-server]');
     expect($content)->toContain('command = "php"');
-    
+
     // Should NOT have old server
     expect($content)->not->toContain('old-server');
     expect($content)->not->toContain('old-arg');
@@ -94,14 +94,14 @@ TOML;
 
 test('toml writer rejects non-toml files', function () {
     $jsonPath = $this->tempDir . '/config.json';
-    
+
     expect(fn () => new TomlFileWriter($jsonPath))
         ->toThrow(RuntimeException::class, 'must point to a .toml file');
 });
 
 test('toml writer rejects path traversal', function () {
     $badPath = $this->tempDir . '/../../../etc/config.toml';
-    
+
     expect(fn () => new TomlFileWriter($badPath))
         ->toThrow(RuntimeException::class, 'path traversal detected');
 });
@@ -114,7 +114,7 @@ test('toml writer creates directory if not exists', function () {
     $writer->save();
 
     expect(file_exists($nestedPath))->toBeTrue();
-    
+
     // Cleanup nested dirs
     @unlink($nestedPath);
     @rmdir(dirname($nestedPath));

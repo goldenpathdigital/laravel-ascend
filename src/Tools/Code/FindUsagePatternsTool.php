@@ -65,7 +65,7 @@ final class FindUsagePatternsTool extends ProjectAwareTool
                 'results' => $results,
             ],
             warnings: $warnings,
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 
@@ -99,4 +99,3 @@ final class FindUsagePatternsTool extends ProjectAwareTool
         return $results;
     }
 }
-

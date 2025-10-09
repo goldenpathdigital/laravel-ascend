@@ -8,9 +8,9 @@ final class McpStdioServer
 {
     /** @var McpRequestHandler */
     private $handler;
-    
+
     public function __construct(
-        McpRequestHandler $handler
+        McpRequestHandler $handler,
     ) {
         $this->handler = $handler;
     }

@@ -76,4 +76,3 @@ it('loads upgrade path data with sequencing', function (): void {
         ->toHaveKey('sequence')
         ->and($path['sequence'])->toBeArray()->not->toBeEmpty();
 });
-

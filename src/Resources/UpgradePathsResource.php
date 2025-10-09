@@ -11,9 +11,9 @@ final class UpgradePathsResource implements ResourceInterface
 {
     /** @var KnowledgeBaseService */
     private $knowledgeBase;
-    
+
     public function __construct(
-        KnowledgeBaseService $knowledgeBase
+        KnowledgeBaseService $knowledgeBase,
     ) {
         $this->knowledgeBase = $knowledgeBase;
     }
@@ -29,10 +29,10 @@ final class UpgradePathsResource implements ResourceInterface
     public function toArray(): array
     {
         $identifiers = $this->knowledgeBase->listUpgradePathIdentifiers();
-        
+
         $paths = array_map(function (string $identifier) {
             $path = $this->knowledgeBase->getUpgradePath($identifier);
-            
+
             return [
                 'identifier' => $identifier,
                 'from_version' => $path['from'] ?? 'unknown',

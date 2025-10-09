@@ -96,4 +96,3 @@ final class GetCodeModificationSuggestionsTool extends ProjectAwareTool
         throw DocumentationException::becauseDocumentNotFound('breaking change entry', $changeId);
     }
 }
-

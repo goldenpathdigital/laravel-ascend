@@ -51,4 +51,3 @@ it('lists deprecated features using feature-removal categories', function (): vo
     expect($response)->toHaveKey('ok', true);
     expect($response['data']['deprecated'])->toBeArray();
 });
-

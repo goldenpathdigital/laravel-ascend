@@ -12,9 +12,9 @@ final class GetBreakingChangeDetailsTool extends AbstractTool
 {
     /** @var KnowledgeBaseService */
     private $knowledgeBase;
-    
+
     public function __construct(
-        KnowledgeBaseService $knowledgeBase
+        KnowledgeBaseService $knowledgeBase,
     ) {
         $this->knowledgeBase = $knowledgeBase;
     }

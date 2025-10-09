@@ -10,7 +10,7 @@ final class TomlFileWriter
 {
     /** @var string */
     private $filePath;
-    
+
     /**
      * @var array<string, array<string, mixed>>
      */
@@ -41,13 +41,13 @@ final class TomlFileWriter
 
         $existingContent = '';
         $mcpServersSection = '';
-        
+
         if (is_file($this->filePath)) {
             $existingContent = file_get_contents($this->filePath);
             if ($existingContent === false) {
                 throw new RuntimeException(sprintf('Unable to read TOML configuration: %s', $this->filePath));
             }
-            
+
             // Remove existing MCP servers section if it exists
             // Split at the MCP comment and only keep content before it
             $parts = explode('# MCP Servers Configuration', $existingContent);
@@ -57,11 +57,11 @@ final class TomlFileWriter
         // Build MCP servers section
         if ($this->servers !== []) {
             $mcpServersSection = "\n\n# MCP Servers Configuration\n";
-            
+
             foreach ($this->servers as $key => $config) {
                 $mcpServersSection .= sprintf("[mcp.servers.%s]\n", $key);
                 $mcpServersSection .= sprintf('command = "%s"', $config['command']) . "\n";
-                
+
                 if (!empty($config['args'])) {
                     $mcpServersSection .= "args = [\n";
                     foreach ($config['args'] as $arg) {
@@ -69,7 +69,7 @@ final class TomlFileWriter
                     }
                     $mcpServersSection .= "]\n";
                 }
-                
+
                 $mcpServersSection .= "\n";
             }
         }

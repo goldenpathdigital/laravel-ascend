@@ -8,7 +8,7 @@ final class SearchIndex
 {
     /** @var DocumentationLoader */
     private $loader;
-    
+
     /**
      * @var array<int, array<string, mixed>>
      */
@@ -33,7 +33,7 @@ final class SearchIndex
 
         $terms = array_values(array_filter(array_map(
             static fn (string $term): string => strtolower($term),
-            preg_split('/\s+/', $query) ?: []
+            preg_split('/\s+/', $query) ?: [],
         )));
 
         if ($terms === []) {
@@ -116,7 +116,7 @@ final class SearchIndex
                     (string) ($change['severity'] ?? ''),
                     (string) ($change['category'] ?? ''),
                     (string) ($change['version'] ?? ''),
-                ]
+                ],
             );
         }
 
@@ -139,8 +139,8 @@ final class SearchIndex
                     [
                         (string) ($pattern['category'] ?? ''),
                         (string) ($pattern['complexity'] ?? ''),
-                    ]
-                )
+                    ],
+                ),
             );
         }
 
@@ -159,7 +159,7 @@ final class SearchIndex
         string $title,
         string $summary,
         array $metadata,
-        array $additionalTokens = []
+        array $additionalTokens = [],
     ): array {
         $tokenSource = strtolower(
             trim(
@@ -169,9 +169,9 @@ final class SearchIndex
                         $title,
                         $summary,
                         implode(' ', array_filter($additionalTokens)),
-                    ])
-                )
-            )
+                    ]),
+                ),
+            ),
         );
 
         return [

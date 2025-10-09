@@ -45,7 +45,7 @@ final class DocumentationLoader
         $this->basePath = $resolvedBasePath;
         $this->parser = $parser ?? new DocumentationParser();
         $this->logger = $logger ?? new NullLogger();
-        
+
         $this->logger->debug('DocumentationLoader initialized', ['base_path' => $this->basePath]);
     }
 
@@ -226,7 +226,7 @@ final class DocumentationLoader
     {
         if ($this->upgradePaths === null) {
             $this->upgradePaths = $this->parser->parseJsonFile(
-                $this->resolvePath('upgrade-paths/upgrade-paths.json')
+                $this->resolvePath('upgrade-paths/upgrade-paths.json'),
             );
         }
 

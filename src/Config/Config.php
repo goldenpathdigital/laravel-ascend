@@ -65,12 +65,12 @@ final class Config
                 usleep(10000); // 10ms
                 $retries++;
             }
-            
+
             // If config was loaded while waiting, return
             if (self::$config !== null) {
                 return;
             }
-            
+
             // Otherwise throw exception
             throw ConfigException::loadFailed('Configuration loading timed out (possible race condition)');
         }
@@ -83,11 +83,11 @@ final class Config
             foreach ($paths as $path) {
                 if (file_exists($path)) {
                     $loaded = require $path;
-                    
+
                     if (!is_array($loaded)) {
                         throw ConfigException::loadFailed(sprintf('Config file "%s" must return an array', $path));
                     }
-                    
+
                     self::$config = $loaded;
                     self::$configPath = $path;
                     return;

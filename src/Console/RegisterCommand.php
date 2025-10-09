@@ -28,8 +28,8 @@ class RegisterCommand extends Command
             return self::SUCCESS;
         }
 
-        $selectedTargets = $this->option('all') 
-            ? $allTargets 
+        $selectedTargets = $this->option('all')
+            ? $allTargets
             : $this->promptForTargets($allTargets);
 
         if ($selectedTargets === []) {
@@ -47,7 +47,7 @@ class RegisterCommand extends Command
         $this->newLine();
         $this->info('✓ Successfully registered Ascend MCP server!');
         $this->newLine();
-        
+
         foreach ($writtenPaths as $path) {
             $this->line('  • ' . $path);
         }
@@ -77,7 +77,7 @@ class RegisterCommand extends Command
             array_merge(['all', 'none'], $choices),
             'all',
             null,
-            true
+            true,
         );
 
         if (in_array('none', $selected, true)) {

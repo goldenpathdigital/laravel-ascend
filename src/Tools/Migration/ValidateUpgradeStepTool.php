@@ -47,8 +47,7 @@ final class ValidateUpgradeStepTool extends ProjectAwareTool
                 'validated' => $changeMatches === [],
                 'remaining_matches' => $changeMatches,
             ],
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 }
-

@@ -41,7 +41,7 @@ final class AnalyzeConfigChangesTool extends ProjectAwareTool
                 'config_files' => $summaries,
                 'count' => count($summaries),
             ],
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 
@@ -63,4 +63,3 @@ final class AnalyzeConfigChangesTool extends ProjectAwareTool
         return array_values(array_unique($matches[1]));
     }
 }
-

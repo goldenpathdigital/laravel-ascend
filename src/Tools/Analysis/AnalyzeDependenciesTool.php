@@ -28,4 +28,3 @@ final class AnalyzeDependenciesTool extends ProjectAwareTool
         return $this->success($result, startedAt: $startedAt);
     }
 }
-

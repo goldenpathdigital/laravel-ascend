@@ -33,7 +33,7 @@ final class FilesystemScanner
         $files = [];
 
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
         );
 
         foreach ($iterator as $file) {

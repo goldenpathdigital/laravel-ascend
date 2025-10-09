@@ -45,8 +45,7 @@ final class ScanBladeTemplatesTool extends ProjectAwareTool
                 'templates' => $findings,
                 'count' => count($findings),
             ],
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 }
-

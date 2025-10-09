@@ -14,7 +14,7 @@ final class ToolRegistry
      * @var array<string, ToolInterface>
      */
     private array $tools = [];
-    
+
     private LoggerInterface $logger;
     private int $timeoutSeconds;
 
@@ -54,34 +54,34 @@ final class ToolRegistry
     {
         $tool = $this->get($name);
         $startTime = microtime(true);
-        
+
         $this->logger->info('Tool execution started', [
             'tool' => $name,
             'payload_size' => count($payload),
         ]);
-        
+
         try {
             // Execute with timeout using set_time_limit for long operations
             $originalLimit = ini_get('max_execution_time');
             if ($originalLimit !== false && $this->timeoutSeconds > 0) {
                 set_time_limit($this->timeoutSeconds);
             }
-            
+
             $result = $tool->execute($payload);
-            
+
             // Restore original limit
             if ($originalLimit !== false) {
                 set_time_limit((int) $originalLimit);
             }
-            
+
             $duration = microtime(true) - $startTime;
-            
+
             $this->logger->info('Tool execution completed', [
                 'tool' => $name,
                 'duration_ms' => round($duration * 1000, 2),
                 'success' => $result['ok'] ?? false,
             ]);
-            
+
             // Log warnings if present
             if (isset($result['warnings']) && is_array($result['warnings']) && count($result['warnings']) > 0) {
                 $this->logger->warning('Tool execution warnings', [
@@ -89,24 +89,24 @@ final class ToolRegistry
                     'warnings' => $result['warnings'],
                 ]);
             }
-            
+
             return $result;
-            
+
         } catch (\Throwable $exception) {
             $duration = microtime(true) - $startTime;
-            
+
             $this->logger->error('Tool execution failed', [
                 'tool' => $name,
                 'duration_ms' => round($duration * 1000, 2),
                 'exception' => get_class($exception),
                 'message' => $exception->getMessage(),
             ]);
-            
+
             // Restore original limit in case of exception
             if (isset($originalLimit) && $originalLimit !== false) {
                 set_time_limit((int) $originalLimit);
             }
-            
+
             throw $exception;
         }
     }
@@ -118,7 +118,7 @@ final class ToolRegistry
     {
         return array_keys($this->tools);
     }
-    
+
     /**
      * Set timeout for tool execution
      */

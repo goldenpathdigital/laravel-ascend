@@ -11,16 +11,16 @@ final class CacheManager
     private const DEFAULT_TTL = 3600;
     private const DEFAULT_MAX_SIZE = 100;
     private const DEFAULT_MAX_VALUE_SIZE = 1048576; // 1MB
-    
+
     /** @var array<string, string> Stores serialized values to avoid double serialization */
     private array $cache = [];
-    
+
     /** @var array<string, int> */
     private array $timestamps = [];
-    
+
     /** @var int Current memory usage estimate in bytes */
     private int $currentMemoryUsage = 0;
-    
+
     private int $defaultTtl;
     private int $maxCacheSize;
     private int $maxValueSize;
@@ -28,7 +28,7 @@ final class CacheManager
     public function __construct(
         int $defaultTtl = self::DEFAULT_TTL,
         int $maxCacheSize = self::DEFAULT_MAX_SIZE,
-        int $maxValueSize = self::DEFAULT_MAX_VALUE_SIZE
+        int $maxValueSize = self::DEFAULT_MAX_VALUE_SIZE,
     ) {
         $this->defaultTtl = $defaultTtl;
         $this->maxCacheSize = $maxCacheSize;
@@ -46,11 +46,11 @@ final class CacheManager
     public function set(string $key, $value, ?int $ttl = null): void
     {
         $this->validateKey($key);
-        
+
         // Serialize once for validation and storage
         $serialized = serialize($value);
         $size = strlen($serialized);
-        
+
         if ($size > $this->maxValueSize) {
             throw CacheException::valueTooLarge($key, $size, $this->maxValueSize);
         }

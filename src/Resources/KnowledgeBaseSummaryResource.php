@@ -11,12 +11,12 @@ final class KnowledgeBaseSummaryResource implements ResourceInterface
 {
     /** @var KnowledgeBaseService */
     private $knowledgeBase;
-    
+
     /** @var array<string, mixed>|null */
     private ?array $cachedArray = null;
 
     public function __construct(
-        KnowledgeBaseService $knowledgeBase
+        KnowledgeBaseService $knowledgeBase,
     ) {
         $this->knowledgeBase = $knowledgeBase;
     }

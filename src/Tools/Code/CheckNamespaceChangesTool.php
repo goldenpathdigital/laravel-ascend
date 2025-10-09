@@ -45,8 +45,7 @@ final class CheckNamespaceChangesTool extends ProjectAwareTool
                 'legacy_namespaces' => $legacy,
                 'count' => count($legacy),
             ],
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 }
-

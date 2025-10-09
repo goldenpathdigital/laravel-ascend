@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace GoldenPathDigital\LaravelAscend\Server;
 
 use GoldenPathDigital\LaravelAscend\Documentation\KnowledgeBaseService;
-use GoldenPathDigital\LaravelAscend\Tools\ToolRegistry;
 use GoldenPathDigital\LaravelAscend\Tools\ToolInterface;
+use GoldenPathDigital\LaravelAscend\Tools\ToolRegistry;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
@@ -16,16 +16,16 @@ final class AscendServer
 {
     /** @var KnowledgeBaseService */
     private $knowledgeBase;
-    
+
     /** @var ToolRegistry */
     private $toolRegistry;
-    
+
     /** @var array<int, array<string, mixed>> */
     private $resourceDescriptors;
-    
+
     /** @var array<int, array<string, mixed>> */
     private $promptDescriptors;
-    
+
     /**
      * @param array<int, array<string, mixed>> $resourceDescriptors
      * @param array<int, array<string, mixed>> $promptDescriptors
@@ -34,7 +34,7 @@ final class AscendServer
         KnowledgeBaseService $knowledgeBase,
         ToolRegistry $toolRegistry,
         array $resourceDescriptors = [],
-        array $promptDescriptors = []
+        array $promptDescriptors = [],
     ) {
         $this->knowledgeBase = $knowledgeBase;
         $this->toolRegistry = $toolRegistry;
@@ -63,10 +63,10 @@ final class AscendServer
     public function getServerVersion(): string
     {
         static $version = null;
-        
+
         if ($version === null) {
             $composerPath = dirname(__DIR__, 2) . '/composer.json';
-            
+
             if (file_exists($composerPath)) {
                 $contents = file_get_contents($composerPath);
                 if ($contents !== false) {
@@ -76,13 +76,13 @@ final class AscendServer
                     }
                 }
             }
-            
+
             // Fallback if version not found
             if ($version === null) {
                 $version = '0.1.0-dev';
             }
         }
-        
+
         return $version;
     }
 
@@ -229,7 +229,7 @@ final class AscendServer
                     'annotations' => $tool->getAnnotations() ?: (object) [],
                 ];
             },
-            $registry->list()
+            $registry->list(),
         );
     }
 
@@ -309,7 +309,7 @@ final class AscendServer
         try {
             $iterator = new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS),
-                RecursiveIteratorIterator::SELF_FIRST
+                RecursiveIteratorIterator::SELF_FIRST,
             );
             $iterator->setMaxDepth(5); // Limit recursion depth
         } catch (\Exception $e) {
@@ -434,7 +434,7 @@ final class AscendServer
         try {
             $iterator = new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS),
-                RecursiveIteratorIterator::SELF_FIRST
+                RecursiveIteratorIterator::SELF_FIRST,
             );
             $iterator->setMaxDepth(5); // Limit recursion depth
         } catch (\Exception $e) {

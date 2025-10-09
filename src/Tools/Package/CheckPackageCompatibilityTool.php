@@ -61,7 +61,7 @@ final class CheckPackageCompatibilityTool extends ProjectAwareTool
                 'compatible' => $compatible,
             ],
             warnings: $warnings,
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 
@@ -74,4 +74,3 @@ final class CheckPackageCompatibilityTool extends ProjectAwareTool
         return 0;
     }
 }
-

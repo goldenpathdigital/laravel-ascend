@@ -10,16 +10,16 @@ final class KnowledgeBaseService
 {
     /** @var DocumentationLoader */
     private $loader;
-    
+
     /** @var SearchIndex */
     private $searchIndex;
-    
+
     /** @var CacheManager */
     private $cache;
-    
+
     public function __construct(
         DocumentationLoader $loader,
-        SearchIndex $searchIndex
+        SearchIndex $searchIndex,
     ) {
         $this->loader = $loader;
         $this->searchIndex = $searchIndex;
@@ -85,7 +85,7 @@ final class KnowledgeBaseService
         if (!isset($entries[$key])) {
             throw DocumentationException::becauseDocumentNotFound(
                 'breaking change entry',
-                sprintf('%s (%s)', $changeId, $slug)
+                sprintf('%s (%s)', $changeId, $slug),
             );
         }
 

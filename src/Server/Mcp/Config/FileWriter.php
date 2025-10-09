@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace GoldenPathDigital\LaravelAscend\Server\Mcp\Config;
 
-use RuntimeException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use RuntimeException;
 
 final class FileWriter
 {
     /** @var string */
     private $filePath;
-    
+
     /** @var string */
     private $configKey;
-    
+
     /**
      * @var array<string, array<string, mixed>>
      */
     private array $servers = [];
-    
+
     private LoggerInterface $logger;
 
     /**
@@ -32,13 +32,13 @@ final class FileWriter
     public function __construct(
         string $filePath,
         string $configKey = 'servers',
-        ?LoggerInterface $logger = null
+        ?LoggerInterface $logger = null,
     ) {
         $this->logger = $logger ?? new NullLogger();
         $this->validateFilePath($filePath);
         $this->filePath = $filePath;
         $this->configKey = $configKey;
-        
+
         $this->logger->debug('FileWriter initialized', [
             'file_path' => $filePath,
             'config_key' => $configKey,
@@ -88,7 +88,7 @@ final class FileWriter
         if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
             $decoded[$this->configKey] = array_merge(
                 $decoded[$this->configKey] ?? [],
-                $this->servers
+                $this->servers,
             );
 
             $this->writeJson($decoded);
@@ -279,7 +279,7 @@ final class FileWriter
         // Extract filename to check for common MCP config names
         $fileName = basename($filePath);
         $validNames = ['mcp.json', 'cline_mcp_settings.json'];
-        
+
         if (!in_array($fileName, $validNames, true)) {
             // Allow other names but ensure they contain 'mcp' for safety
             if (!str_contains(strtolower($fileName), 'mcp')) {
@@ -289,11 +289,11 @@ final class FileWriter
                 ]);
                 throw new RuntimeException(sprintf(
                     'File name "%s" does not appear to be an MCP configuration file',
-                    $fileName
+                    $fileName,
                 ));
             }
         }
-        
+
         $this->logger->debug('File path validated successfully', ['file_name' => $fileName]);
     }
 }

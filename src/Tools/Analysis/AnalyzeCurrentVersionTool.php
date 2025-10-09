@@ -28,4 +28,3 @@ final class AnalyzeCurrentVersionTool extends ProjectAwareTool
         return $this->success($analysis, startedAt: $startedAt);
     }
 }
-

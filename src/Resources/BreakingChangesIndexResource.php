@@ -11,9 +11,9 @@ final class BreakingChangesIndexResource implements ResourceInterface
 {
     /** @var KnowledgeBaseService */
     private $knowledgeBase;
-    
+
     public function __construct(
-        KnowledgeBaseService $knowledgeBase
+        KnowledgeBaseService $knowledgeBase,
     ) {
         $this->knowledgeBase = $knowledgeBase;
     }
@@ -29,10 +29,10 @@ final class BreakingChangesIndexResource implements ResourceInterface
     public function toArray(): array
     {
         $slugs = $this->knowledgeBase->listBreakingChangeSlugs();
-        
+
         $index = array_map(function (string $slug) {
             $doc = $this->knowledgeBase->getBreakingChangeDocument($slug);
-            
+
             return [
                 'slug' => $slug,
                 'version' => $doc['version'] ?? 'unknown',

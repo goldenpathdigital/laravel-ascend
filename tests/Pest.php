@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Tests\TestCase;
 
 uses(TestCase::class)->in('Feature', 'Unit');
@@ -23,11 +25,11 @@ if (!function_exists('env')) {
     function env($key, $default = null)
     {
         $value = getenv($key);
-        
+
         if ($value === false) {
             return $default;
         }
-        
+
         return $value;
     }
 }

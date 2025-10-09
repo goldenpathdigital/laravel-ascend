@@ -10,11 +10,11 @@ final class McpRequestHandler
 {
     /** @var AscendServer */
     private $ascendServer;
-    
+
     private bool $initialized = false;
 
     public function __construct(
-        AscendServer $ascendServer
+        AscendServer $ascendServer,
     ) {
         $this->ascendServer = $ascendServer;
     }
@@ -30,7 +30,7 @@ final class McpRequestHandler
         if (is_array($decoded) && array_is_list($decoded)) {
             $responses = array_values(array_filter(
                 array_map(fn ($request) => $this->handleRequest($request), $decoded),
-                static fn ($response) => $response !== null
+                static fn ($response) => $response !== null,
             ));
 
             return $responses === [] ? '' : json_encode($responses, JSON_THROW_ON_ERROR);

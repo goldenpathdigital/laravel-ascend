@@ -13,4 +13,3 @@ interface ResourceInterface
      */
     public function toArray(): array;
 }
-

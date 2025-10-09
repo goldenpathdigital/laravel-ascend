@@ -60,7 +60,7 @@ it('registers vscode mcp configuration', function (): void {
             $tempDir,
             [
                 ['path' => $configPath, 'configKey' => 'servers'],
-            ]
+            ],
         );
 
         expect($written)->toContain($configPath);
@@ -135,7 +135,7 @@ it('registers cline and global targets automatically', function (): void {
     mkdir($projectDir, 0777, true);
 
     putenv('HOME=' . $homeDir);
-   $_SERVER['HOME'] = $homeDir;
+    $_SERVER['HOME'] = $homeDir;
     putenv('VSCODE_MCP_CONFIG');
 
     $artisanPath = createArtisanStub();

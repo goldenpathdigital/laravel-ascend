@@ -41,8 +41,7 @@ final class ScanBreakingChangesTool extends ProjectAwareTool
                 'to' => $to,
                 'matches' => $results,
             ],
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 }
-

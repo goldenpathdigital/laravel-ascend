@@ -48,8 +48,7 @@ final class AnalyzeFacadesTool extends ProjectAwareTool
                 'facade_usages' => $facades,
                 'count' => count($facades),
             ],
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 }
-

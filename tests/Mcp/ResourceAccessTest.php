@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use GoldenPathDigital\LaravelAscend\Server\Mcp\McpRequestHandler;
 use GoldenPathDigital\LaravelAscend\Server\AscendServer;
+use GoldenPathDigital\LaravelAscend\Server\Mcp\McpRequestHandler;
 
 beforeEach(function () {
     $this->server = AscendServer::createDefault();

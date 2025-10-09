@@ -62,7 +62,7 @@ final class SuggestPackageUpdatesTool extends ProjectAwareTool
                 'target' => $target,
                 'suggestions' => $suggestions,
             ],
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 

@@ -11,9 +11,9 @@ final class PatternsIndexResource implements ResourceInterface
 {
     /** @var KnowledgeBaseService */
     private $knowledgeBase;
-    
+
     public function __construct(
-        KnowledgeBaseService $knowledgeBase
+        KnowledgeBaseService $knowledgeBase,
     ) {
         $this->knowledgeBase = $knowledgeBase;
     }
@@ -29,10 +29,10 @@ final class PatternsIndexResource implements ResourceInterface
     public function toArray(): array
     {
         $patternIds = $this->knowledgeBase->listPatternIdentifiers();
-        
+
         $patterns = array_map(function (string $patternId) {
             $pattern = $this->knowledgeBase->getPattern($patternId);
-            
+
             return [
                 'id' => $patternId,
                 'name' => $pattern['name'] ?? $patternId,

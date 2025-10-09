@@ -13,4 +13,3 @@ interface PromptInterface
      */
     public function toArray(): array;
 }
-

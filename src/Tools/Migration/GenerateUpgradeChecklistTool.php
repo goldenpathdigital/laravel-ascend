@@ -55,8 +55,7 @@ final class GenerateUpgradeChecklistTool extends ProjectAwareTool
                 'estimated_time_minutes' => $path['estimated_time_minutes'] ?? null,
                 'checklist' => $checklist,
             ],
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 }
-

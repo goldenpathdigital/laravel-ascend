@@ -11,9 +11,9 @@ final class McpRegistration
 {
     /** @var string */
     private $binaryPath;
-    
+
     public function __construct(
-        string $binaryPath
+        string $binaryPath,
     ) {
         $this->binaryPath = $binaryPath;
     }
@@ -35,7 +35,7 @@ final class McpRegistration
 
         foreach ($targets as $target) {
             $format = $target['format'] ?? 'json';
-            
+
             if ($format === 'toml') {
                 $writer = new TomlFileWriter($target['path']);
                 $writer->addServer('laravel-ascend', $command[0], array_slice($command, 1));
@@ -144,7 +144,7 @@ final class McpRegistration
                 'configKey' => 'servers',
                 'label' => 'Codex (JSON)',
             ];
-            
+
             // Codex TOML configuration
             $targets[] = [
                 'path' => $home . '/.codex/config.toml',

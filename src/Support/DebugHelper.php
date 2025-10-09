@@ -10,7 +10,7 @@ namespace GoldenPathDigital\LaravelAscend\Support;
 final class DebugHelper
 {
     private static bool $debugMode = false;
-    
+
     /**
      * Enable debug mode for detailed error messages
      */
@@ -18,7 +18,7 @@ final class DebugHelper
     {
         self::$debugMode = true;
     }
-    
+
     /**
      * Disable debug mode
      */
@@ -26,7 +26,7 @@ final class DebugHelper
     {
         self::$debugMode = false;
     }
-    
+
     /**
      * Check if debug mode is enabled
      */
@@ -34,7 +34,7 @@ final class DebugHelper
     {
         return self::$debugMode;
     }
-    
+
     /**
      * Format an error message with optional debug details
      *
@@ -47,7 +47,7 @@ final class DebugHelper
         if (!self::$debugMode || empty($debugDetails)) {
             return $message;
         }
-        
+
         $details = [];
         foreach ($debugDetails as $key => $value) {
             if (is_array($value)) {
@@ -59,10 +59,10 @@ final class DebugHelper
             }
             $details[] = sprintf('%s: %s', $key, $value);
         }
-        
+
         return sprintf('%s [Debug: %s]', $message, implode(', ', $details));
     }
-    
+
     /**
      * Sanitize a file path for error messages
      * Returns relative path in production, full path in debug mode
@@ -76,11 +76,11 @@ final class DebugHelper
         if (self::$debugMode) {
             return $path;
         }
-        
+
         if ($basePath !== null && str_starts_with($path, $basePath)) {
             return '...' . substr($path, strlen($basePath));
         }
-        
+
         // Return basename only in production
         return basename($path);
     }

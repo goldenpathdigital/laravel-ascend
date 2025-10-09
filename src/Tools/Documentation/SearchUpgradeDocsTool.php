@@ -11,9 +11,9 @@ final class SearchUpgradeDocsTool extends AbstractTool
 {
     /** @var KnowledgeBaseService */
     private $knowledgeBase;
-    
+
     public function __construct(
-        KnowledgeBaseService $knowledgeBase
+        KnowledgeBaseService $knowledgeBase,
     ) {
         $this->knowledgeBase = $knowledgeBase;
     }
@@ -53,7 +53,7 @@ final class SearchUpgradeDocsTool extends AbstractTool
 
             $results = array_values(array_filter(
                 $results,
-                static fn (array $result): bool => in_array(strtolower((string) ($result['type'] ?? '')), $allowedTypes, true)
+                static fn (array $result): bool => in_array(strtolower((string) ($result['type'] ?? '')), $allowedTypes, true),
             ));
         }
 
@@ -65,7 +65,7 @@ final class SearchUpgradeDocsTool extends AbstractTool
                 'limit' => $limit,
                 'results' => $results,
             ],
-            startedAt: $startedAt
+            startedAt: $startedAt,
         );
     }
 }

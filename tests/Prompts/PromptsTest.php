@@ -8,19 +8,19 @@ use GoldenPathDigital\LaravelAscend\Prompts\UpgradeFoundationPrompt;
 
 test('upgrade foundation prompt has correct name', function () {
     $prompt = new UpgradeFoundationPrompt();
-    
+
     expect($prompt->name())->toBe('upgrade-foundation');
 });
 
 test('upgrade foundation prompt returns array structure', function () {
     $prompt = new UpgradeFoundationPrompt();
     $array = $prompt->toArray();
-    
+
     expect($array)->toBeArray()
         ->toHaveKey('name')
         ->toHaveKey('description')
         ->toHaveKey('arguments');
-    
+
     expect($array['name'])->toBe('upgrade-foundation');
     expect($array['description'])->toBeString();
     expect($array['arguments'])->toBeArray();
@@ -29,7 +29,7 @@ test('upgrade foundation prompt returns array structure', function () {
 test('upgrade foundation prompt has content', function () {
     $prompt = new UpgradeFoundationPrompt();
     $content = $prompt->getContent();
-    
+
     expect($content)->toBeString()
         ->toContain('Laravel Upgrade Guidelines')
         ->toContain('Foundational Principles')
@@ -38,26 +38,26 @@ test('upgrade foundation prompt has content', function () {
 
 test('package upgrade prompt has correct name', function () {
     $prompt = new PackageUpgradePrompt();
-    
+
     expect($prompt->name())->toBe('package-upgrade-guide');
 });
 
 test('package upgrade prompt returns array structure', function () {
     $prompt = new PackageUpgradePrompt();
     $array = $prompt->toArray();
-    
+
     expect($array)->toBeArray()
         ->toHaveKey('name')
         ->toHaveKey('description')
         ->toHaveKey('arguments');
-    
+
     expect($array['name'])->toBe('package-upgrade-guide');
 });
 
 test('package upgrade prompt has comprehensive content', function () {
     $prompt = new PackageUpgradePrompt();
     $content = $prompt->getContent();
-    
+
     expect($content)->toBeString()
         ->toContain('Package Upgrade Guidelines')
         ->toContain('Package Compatibility Strategy')
@@ -67,14 +67,14 @@ test('package upgrade prompt has comprehensive content', function () {
 
 test('breaking change pattern prompt has correct name', function () {
     $prompt = new BreakingChangePatternPrompt();
-    
+
     expect($prompt->name())->toBe('breaking-change-patterns');
 });
 
 test('breaking change pattern prompt returns array structure', function () {
     $prompt = new BreakingChangePatternPrompt();
     $array = $prompt->toArray();
-    
+
     expect($array)->toBeArray()
         ->toHaveKey('name')
         ->toHaveKey('description')
@@ -84,7 +84,7 @@ test('breaking change pattern prompt returns array structure', function () {
 test('breaking change pattern prompt covers common patterns', function () {
     $prompt = new BreakingChangePatternPrompt();
     $content = $prompt->getContent();
-    
+
     expect($content)->toBeString()
         ->toContain('Method Signature Changes')
         ->toContain('Namespace Changes')
@@ -98,7 +98,7 @@ test('all prompts implement PromptInterface', function () {
         new PackageUpgradePrompt(),
         new BreakingChangePatternPrompt(),
     ];
-    
+
     foreach ($prompts as $prompt) {
         expect($prompt)->toBeInstanceOf(\GoldenPathDigital\LaravelAscend\Server\Mcp\Contracts\PromptInterface::class);
     }

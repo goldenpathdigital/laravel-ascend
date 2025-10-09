@@ -21,28 +21,28 @@ final class CheckPhpCompatibilityTool extends ProjectAwareTool
     public function execute(array $payload): array
     {
         $startedAt = microtime(true);
-        
+
         // Support direct php_version/target_laravel_version parameters
         if (isset($payload['php_version']) && isset($payload['target_laravel_version'])) {
             $phpVersion = (string) $payload['php_version'];
             $targetVersion = (string) $payload['target_laravel_version'];
-            
+
             // Get Laravel requirements for the target version
             $slug = $this->knowledgeBase->resolveBreakingChangeSlug(sprintf('%s.x', $targetVersion));
             $document = $this->knowledgeBase->getBreakingChangeDocument($slug);
-            
+
             $requirements = $document['php_requirement'] ?? [];
             $isCompatible = true;
             $warnings = [];
-            
+
             if (isset($requirements['minimum'])) {
                 $isCompatible = version_compare($phpVersion, $requirements['minimum'], '>=');
-                
+
                 if (!$isCompatible) {
                     $warnings[] = sprintf('PHP %s does not satisfy minimum %s.', $phpVersion, $requirements['minimum']);
                 }
             }
-            
+
             $result = [
                 'php_constraint' => $phpVersion,
                 'requirements' => $requirements,
@@ -50,10 +50,10 @@ final class CheckPhpCompatibilityTool extends ProjectAwareTool
                 'compatible' => $isCompatible,
                 'warnings' => $warnings,
             ];
-            
+
             return $this->success($result, $warnings, $startedAt);
         }
-        
+
         $context = $this->createContext($payload);
         $target = isset($payload['target']) ? (string) $payload['target'] : '';
 
