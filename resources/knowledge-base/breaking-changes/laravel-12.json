@@ -1,0 +1,261 @@
+{
+  "version": "12.0",
+  "from_version": "11.x",
+  "release_date": "2025-02-24",
+  "estimated_time_minutes": 10,
+  "php_requirement": {
+    "minimum": "8.2.0",
+    "recommended": "8.3.0",
+    "supported": ["8.2", "8.3", "8.4"]
+  },
+  "breaking_changes": [
+    {
+      "id": "carbon-3-required",
+      "title": "Carbon 3.x Required",
+      "category": "dependency",
+      "severity": "high",
+      "automatable": true,
+      "description": "Carbon 2.x support removed, Carbon 3.x required",
+      "detection": {
+        "file_patterns": ["composer.json"],
+        "regex_patterns": ["\"nesbot/carbon\":\\s*\"\\^2\\."],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "composer_version_update",
+        "search": "\"nesbot/carbon\": \"^2.0\"",
+        "replace": "\"nesbot/carbon\": \"^3.0\"",
+        "note": "Usually auto-updated via laravel/framework"
+      },
+      "examples": {
+        "before": "\"nesbot/carbon\": \"^2.0\"",
+        "after": "\"nesbot/carbon\": \"^3.0\""
+      },
+      "references": [
+        "https://laravel.com/docs/12.x/upgrade#carbon-3"
+      ],
+      "manual_steps": [
+        "Review Carbon API changes if directly using Carbon",
+        "Most apps won't need code changes"
+      ]
+    },
+    {
+      "id": "uuid-v7-default",
+      "title": "HasUuids Generates UUIDv7 by Default",
+      "category": "feature-removal",
+      "severity": "medium",
+      "automatable": true,
+      "description": "HasUuids trait now generates UUIDv7 instead of v4 by default",
+      "detection": {
+        "file_patterns": ["app/Models/**/*.php"],
+        "regex_patterns": ["use HasUuids"],
+        "ast_pattern": {
+          "node_type": "Stmt_TraitUse",
+          "trait": "HasUuids"
+        }
+      },
+      "transformation": {
+        "type": "trait_replacement_optional",
+        "description": "Use HasVersion4Uuids to keep v4 UUIDs"
+      },
+      "examples": {
+        "before": "use HasUuids;  // Generated UUIDv4",
+        "after": "// Option 1: Use new default UUIDv7\nuse HasUuids;\n\n// Option 2: Keep UUIDv4\nuse Illuminate\\Database\\Eloquent\\Concerns\\HasVersion4Uuids as HasUuids;"
+      },
+      "references": [
+        "https://laravel.com/docs/12.x/upgrade#uuid-generation"
+      ],
+      "manual_steps": [
+        "Decide if UUIDv7 is acceptable",
+        "Use HasVersion4Uuids if v4 required"
+      ]
+    },
+    {
+      "id": "container-default-value-resolution",
+      "title": "Container Respects Default Property Values",
+      "category": "syntax",
+      "severity": "low",
+      "automatable": false,
+      "description": "Container now respects default null values in constructor properties",
+      "detection": {
+        "file_patterns": ["app/**/*.php"],
+        "regex_patterns": ["__construct\\(.*=\\s*null"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "manual_review",
+        "description": "Review classes with default null constructor parameters"
+      },
+      "examples": {
+        "before": "// Laravel 11: Container injected dependency\npublic function __construct(Service $service = null) {}",
+        "after": "// Laravel 12: Container respects default null\npublic function __construct(Service $service = null) {}\n// $service may actually be null now"
+      },
+      "references": [
+        "https://laravel.com/docs/12.x/upgrade#container-default-values"
+      ],
+      "manual_steps": [
+        "Low impact for most applications"
+      ]
+    },
+    {
+      "id": "concurrency-result-keys",
+      "title": "Concurrency::run Preserves Array Keys",
+      "category": "syntax",
+      "severity": "low",
+      "automatable": false,
+      "description": "Concurrency::run now preserves associative array keys",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": ["Concurrency::run\\(\\["],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "manual_review",
+        "description": "Review code using Concurrency::run with associative arrays"
+      },
+      "examples": {
+        "before": "// Laravel 11: Returned numeric keys\n$results = Concurrency::run([\n    'task1' => fn() => 1,\n    'task2' => fn() => 2,\n]);\n// $results = [0 => 1, 1 => 2]",
+        "after": "// Laravel 12: Preserves keys\n$results = Concurrency::run([\n    'task1' => fn() => 1,\n    'task2' => fn() => 2,\n]);\n// $results = ['task1' => 1, 'task2' => 2]"
+      },
+      "references": [
+        "https://laravel.com/docs/12.x/upgrade#concurrency"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "schema-multi-schema-support",
+      "title": "Schema Methods Include All Schemas",
+      "category": "syntax",
+      "severity": "low",
+      "automatable": false,
+      "description": "Schema::getTables() and getViews() now include all schemas by default",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": [
+          "Schema::getTables\\(\\)",
+          "Schema::getViews\\(\\)"
+        ],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "parameter_addition_optional",
+        "description": "Add schema parameter if specific schema needed"
+      },
+      "examples": {
+        "before": "$tables = Schema::getTables();  // All schemas",
+        "after": "$tables = Schema::getTables();  // All schemas\n// or\n$tables = Schema::getTables(schema: 'main');  // Specific schema"
+      },
+      "references": [
+        "https://laravel.com/docs/12.x/upgrade#schema-methods"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "local-disk-default-path",
+      "title": "Local Disk Defaults to storage/app/private",
+      "category": "config",
+      "severity": "low",
+      "automatable": true,
+      "description": "Local disk root now defaults to storage/app/private instead of storage/app",
+      "detection": {
+        "file_patterns": ["config/filesystems.php"],
+        "regex_patterns": ["'local'\\s*=>"],
+        "missing_pattern": "'root'\\s*=>"
+      },
+      "transformation": {
+        "type": "config_addition",
+        "description": "Add explicit root path if storage/app behavior needed"
+      },
+      "examples": {
+        "before": "'local' => [\n    'driver' => 'local',\n    // Implicitly storage/app/private in L12\n]",
+        "after": "'local' => [\n    'driver' => 'local',\n    'root' => storage_path('app'),  // Keep L11 behavior\n]"
+      },
+      "references": [
+        "https://laravel.com/docs/12.x/upgrade#local-disk"
+      ],
+      "manual_steps": [
+        "Only if relying on storage/app default"
+      ]
+    },
+    {
+      "id": "image-validation-svg-excluded",
+      "title": "Image Validation Excludes SVGs",
+      "category": "feature-removal",
+      "severity": "low",
+      "automatable": true,
+      "description": "Image validation rule excludes SVGs by default",
+      "detection": {
+        "file_patterns": ["app/**/*.php"],
+        "regex_patterns": ["'image'"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "validation_rule_update",
+        "description": "Add allow_svg parameter if SVGs needed"
+      },
+      "examples": {
+        "before": "'photo' => 'required|image'  // Excluded SVGs in L12",
+        "after": "'photo' => 'required|image:allow_svg'\n// or\n'photo' => ['required', File::image(allowSvg: true)]"
+      },
+      "references": [
+        "https://laravel.com/docs/12.x/upgrade#image-validation"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "request-merge-if-missing-nested",
+      "title": "mergeIfMissing Supports Dot Notation",
+      "category": "syntax",
+      "severity": "low",
+      "automatable": false,
+      "description": "Request::mergeIfMissing() now supports dot notation for nested arrays",
+      "detection": {
+        "file_patterns": ["app/**/*.php"],
+        "regex_patterns": ["->mergeIfMissing\\("],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "feature_enhancement",
+        "description": "No breaking change, new feature"
+      },
+      "examples": {
+        "before": "// Laravel 11: Only top-level keys\n$request->mergeIfMissing(['status' => 'active']);",
+        "after": "// Laravel 12: Supports dot notation\n$request->mergeIfMissing(['user.status' => 'active']);"
+      },
+      "references": [
+        "https://laravel.com/docs/12.x/upgrade#merge-if-missing"
+      ],
+      "manual_steps": []
+    }
+  ],
+  "dependency_changes": {
+    "php_packages": {
+      "update": {
+        "laravel/framework": "^12.0"
+      }
+    },
+    "dev_packages": {
+      "update": {
+        "phpunit/phpunit": "^11.0",
+        "pestphp/pest": "^3.0"
+      }
+    },
+    "carbon": {
+      "update": "^3.0 (auto-updated via framework)"
+    }
+  },
+  "configuration_changes": [],
+  "new_features": [
+    "React, Vue (Inertia 2), Livewire (Flux) starter kits",
+    "xxHash performance improvements",
+    "MariaDB native commands",
+    "Multi-schema database support",
+    "WorkOS AuthKit integration"
+  ],
+  "deprecations": [],
+  "notes": [
+    "Most apps upgrade without code changes",
+    "Carbon 3 auto-updates with framework",
+    "UUIDv7 is main breaking change to consider"
+  ]
+}

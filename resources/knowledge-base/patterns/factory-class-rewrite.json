@@ -1,0 +1,111 @@
+{
+  "pattern_id": "factory-class-rewrite",
+  "name": "Laravel 8 Factory Class Rewrite",
+  "applies_to_versions": ["7-to-8"],
+  "category": "structure",
+  "complexity": "high",
+  "description": "Converts function-based factories to class-based factories",
+  "detection": {
+    "file_patterns": [
+      "database/factories/*.php"
+    ],
+    "content_patterns": [
+      "$factory->define(",
+      "$factory->state(",
+      "$factory->afterMaking(",
+      "$factory->afterCreating("
+    ],
+    "ast_requirements": {
+      "has_variable": "$factory",
+      "has_method_call": "define"
+    }
+  },
+  "transformation": {
+    "type": "complete_rewrite",
+    "automatable": false,
+    "steps": [
+      {
+        "step": 1,
+        "action": "extract_model_class",
+        "description": "Extract model class from factory definition"
+      },
+      {
+        "step": 2,
+        "action": "extract_definition_closure",
+        "description": "Extract faker-based field definitions"
+      },
+      {
+        "step": 3,
+        "action": "extract_states",
+        "description": "Extract all state definitions"
+      },
+      {
+        "step": 4,
+        "action": "extract_callbacks",
+        "description": "Extract afterMaking/afterCreating callbacks"
+      },
+      {
+        "step": 5,
+        "action": "generate_class",
+        "description": "Generate new factory class file",
+        "template": "factory_class_template"
+      },
+      {
+        "step": 6,
+        "action": "update_model",
+        "description": "Add HasFactory trait to model"
+      },
+      {
+        "step": 7,
+        "action": "update_tests",
+        "description": "Replace factory() calls with Model::factory()"
+      }
+    ],
+    "templates": {
+      "factory_class_template": "templates/factory-class.stub",
+      "state_method_template": "templates/factory-state.stub"
+    }
+  },
+  "examples": {
+    "simple_factory": {
+      "before": "<?php\n\n$factory->define(App\\Models\\User::class, function (Faker $faker) {\n    return [\n        'name' => $faker->name,\n        'email' => $faker->unique()->safeEmail,\n        'password' => bcrypt('password'),\n    ];\n});",
+      "after": "<?php\n\nnamespace Database\\Factories;\n\nuse App\\Models\\User;\nuse Illuminate\\Database\\Eloquent\\Factories\\Factory;\nuse Illuminate\\Support\\Str;\n\nclass UserFactory extends Factory\n{\n    protected $model = User::class;\n\n    public function definition()\n    {\n        return [\n            'name' => $this->faker->name(),\n            'email' => $this->faker->unique()->safeEmail(),\n            'password' => bcrypt('password'),\n        ];\n    }\n}"
+    },
+    "factory_with_states": {
+      "before": "<?php\n\n$factory->define(App\\Models\\User::class, function (Faker $faker) {\n    return ['name' => $faker->name];\n});\n\n$factory->state(App\\Models\\User::class, 'admin', [\n    'admin' => true,\n]);\n\n$factory->afterCreating(App\\Models\\User::class, function ($user, $faker) {\n    $user->profile()->save(factory(App\\Models\\Profile::class)->make());\n});",
+      "after": "<?php\n\nnamespace Database\\Factories;\n\nuse App\\Models\\User;\nuse Illuminate\\Database\\Eloquent\\Factories\\Factory;\n\nclass UserFactory extends Factory\n{\n    protected $model = User::class;\n\n    public function definition()\n    {\n        return [\n            'name' => $this->faker->name(),\n        ];\n    }\n\n    public function admin()\n    {\n        return $this->state([\n            'admin' => true,\n        ]);\n    }\n\n    public function configure()\n    {\n        return $this->afterCreating(function (User $user) {\n            $user->profile()->save(Profile::factory()->make());\n        });\n    }\n}"
+    },
+    "test_usage_before": "factory(User::class)->create();",
+    "test_usage_after": "User::factory()->create();",
+    "test_with_state_before": "factory(User::class)->state('admin')->create();",
+    "test_with_state_after": "User::factory()->admin()->create();"
+  },
+  "validation": {
+    "checks": [
+      {
+        "type": "model_has_trait",
+        "trait": "Illuminate\\Database\\Eloquent\\Factories\\HasFactory",
+        "error_message": "Model must use HasFactory trait"
+      },
+      {
+        "type": "factory_class_exists",
+        "pattern": "Database\\Factories\\{ModelName}Factory",
+        "error_message": "Factory class must exist"
+      },
+      {
+        "type": "syntax_valid",
+        "error_message": "Generated factory must have valid PHP syntax"
+      }
+    ]
+  },
+  "migration_notes": [
+    "Consider using laravel/legacy-factories package for gradual migration",
+    "Test factory calls work in test suite before removing old factories",
+    "States become public methods on factory class",
+    "Callbacks use configure() method"
+  ],
+  "references": [
+    "https://laravel.com/docs/8.x/database-testing#defining-model-factories",
+    "https://github.com/laravel/legacy-factories"
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "knowledge_base_version": "1.0.0",
+  "last_updated": "2025-10-08",
+  "laravel_versions_covered": ["6", "7", "8", "9", "10", "11", "12"],
+  
+  "directory_structure": {
+    "breaking_changes": "data/breaking-changes/",
+    "patterns": "data/patterns/",
+    "upgrade_paths": "data/upgrade-paths/",
+    "templates": "data/templates/"
+  },
+  
+  "breaking_changes_files": {
+    "laravel-7": {
+      "file": "data/breaking-changes/laravel-7.json",
+      "version": "7.0",
+      "from_version": "6.x",
+      "breaking_change_count": 11,
+      "high_severity_count": 4,
+      "estimated_time_minutes": 15
+    },
+    "laravel-8": {
+      "file": "data/breaking-changes/laravel-8.json",
+      "version": "8.0",
+      "from_version": "7.x",
+      "breaking_change_count": 12,
+      "high_severity_count": 7,
+      "estimated_time_minutes": 60
+    },
+    "laravel-9": {
+      "file": "data/breaking-changes/laravel-9.json",
+      "version": "9.0",
+      "from_version": "8.x",
+      "breaking_change_count": 12,
+      "high_severity_count": 5,
+      "estimated_time_minutes": 90
+    },
+    "laravel-10": {
+      "file": "data/breaking-changes/laravel-10.json",
+      "version": "10.0",
+      "from_version": "9.x",
+      "breaking_change_count": 11,
+      "high_severity_count": 3,
+      "estimated_time_minutes": 30
+    },
+    "laravel-11": {
+      "file": "data/breaking-changes/laravel-11.json",
+      "version": "11.0",
+      "from_version": "10.x",
+      "breaking_change_count": 10,
+      "high_severity_count": 4,
+      "estimated_time_minutes": 45
+    },
+    "laravel-12": {
+      "file": "data/breaking-changes/laravel-12.json",
+      "version": "12.0",
+      "from_version": "11.x",
+      "breaking_change_count": 8,
+      "high_severity_count": 2,
+      "estimated_time_minutes": 10
+    }
+  },
+  
+  "pattern_files": {
+    "factory-class-rewrite": {
+      "file": "data/patterns/factory-class-rewrite.json",
+      "applies_to": ["7-to-8"],
+      "complexity": "high",
+      "automatable": false
+    },
+    "seeder-namespace-migration": {
+      "file": "data/patterns/seeder-namespace-migration.json",
+      "applies_to": ["7-to-8"],
+      "complexity": "medium",
+      "automatable": true
+    },
+    "models-directory-migration": {
+      "file": "data/patterns/models-directory-migration.json",
+      "applies_to": ["7-to-8"],
+      "complexity": "medium",
+      "automatable": true
+    },
+    "anonymous-migration-conversion": {
+      "file": "data/patterns/anonymous-migration-conversion.json",
+      "applies_to": ["8-to-9"],
+      "complexity": "low",
+      "automatable": true
+    },
+    "swiftmailer-to-symfony-mailer": {
+      "file": "data/patterns/swiftmailer-to-symfony-mailer.json",
+      "applies_to": ["8-to-9"],
+      "complexity": "high",
+      "automatable": false
+    },
+    "model-dates-to-casts": {
+      "file": "data/patterns/model-dates-to-casts.json",
+      "applies_to": ["9-to-10"],
+      "complexity": "low",
+      "automatable": true
+    }
+  },
+  
+  "upgrade_paths_file": "data/upgrade-paths/upgrade-paths.json",
+  
+  "mcp_tool_mappings": {
+    "analyze_project": {
+      "uses": ["breaking_changes_files"],
+      "description": "Scans project for breaking changes"
+    },
+    "generate_upgrade_plan": {
+      "uses": ["upgrade_paths_file", "breaking_changes_files", "pattern_files"],
+      "description": "Creates step-by-step upgrade sequence"
+    },
+    "apply_transformation": {
+      "uses": ["breaking_changes_files", "pattern_files", "templates"],
+      "description": "Applies code transformations"
+    },
+    "update_dependencies": {
+      "uses": ["breaking_changes_files.dependency_changes"],
+      "description": "Updates composer.json"
+    },
+    "validate_upgrade": {
+      "uses": ["breaking_changes_files"],
+      "description": "Validates completed upgrade"
+    }
+  },
+  
+  "mcp_resource_mappings": {
+    "laravel://breaking-changes/{version}": {
+      "file": "data/breaking-changes/laravel-{version}.json",
+      "mime_type": "application/json",
+      "description": "Get all breaking changes for version"
+    },
+    "laravel://upgrade-guide/{from}/{to}": {
+      "file": "data/upgrade-paths/upgrade-paths.json",
+      "path": "upgrade_paths.{from}-to-{to}",
+      "mime_type": "application/json",
+      "description": "Get upgrade sequence between versions"
+    },
+    "laravel://pattern/{pattern-id}": {
+      "file": "data/patterns/{pattern-id}.json",
+      "mime_type": "application/json",
+      "description": "Get transformation pattern details"
+    }
+  },
+  
+  "query_examples": {
+    "get_all_changes_for_version": {
+      "example": "load('data/breaking-changes/laravel-8.json')"
+    },
+    "get_high_severity_changes": {
+      "example": "load('data/breaking-changes/laravel-8.json').breaking_changes.filter(c => c.severity === 'high')"
+    },
+    "get_automatable_changes": {
+      "example": "load('data/breaking-changes/laravel-8.json').breaking_changes.filter(c => c.automatable === true)"
+    },
+    "get_upgrade_sequence": {
+      "example": "load('data/upgrade-paths/upgrade-paths.json').upgrade_paths['8-to-9'].sequence"
+    },
+    "find_change_by_id": {
+      "example": "load('data/breaking-changes/laravel-8.json').breaking_changes.find(c => c.id === 'model-factories-rewrite')"
+    }
+  },
+  
+  "statistics": {
+    "total_breaking_changes": 64,
+    "total_patterns": 6,
+    "total_upgrade_paths": 6,
+    "automatable_changes": 42,
+    "manual_review_required": 22,
+    "average_upgrade_time_minutes": 42
+  },
+  
+  "php_version_matrix": {
+    "6": { "min": "7.2.0", "max": "8.0" },
+    "7": { "min": "7.2.5", "max": "8.0" },
+    "8": { "min": "7.3.0", "max": "8.1" },
+    "9": { "min": "8.0.2", "max": "8.1" },
+    "10": { "min": "8.1.0", "max": "8.3" },
+    "11": { "min": "8.2.0", "max": "8.4" },
+    "12": { "min": "8.2.0", "max": "8.4" }
+  },
+  
+  "support_timeline": {
+    "6": { "released": "2019-09-03", "bug_fixes_until": "2021-09-03", "security_until": "2022-09-03" },
+    "7": { "released": "2020-03-03", "bug_fixes_until": "2020-10-06", "security_until": "2021-03-03" },
+    "8": { "released": "2020-09-08", "bug_fixes_until": "2022-07-26", "security_until": "2023-01-24" },
+    "9": { "released": "2022-02-08", "bug_fixes_until": "2023-08-08", "security_until": "2024-02-06" },
+    "10": { "released": "2023-02-14", "bug_fixes_until": "2024-08-06", "security_until": "2025-02-04" },
+    "11": { "released": "2024-03-12", "bug_fixes_until": "2025-09-03", "security_until": "2026-03-12", "lts": true },
+    "12": { "released": "2025-02-24", "bug_fixes_until": "2026-08-13", "security_until": "2027-02-24" }
+  },
+  
+  "usage_instructions": {
+    "load_breaking_changes": "const changes = require('./data/breaking-changes/laravel-8.json');",
+    "filter_by_severity": "const highSeverity = changes.breaking_changes.filter(c => c.severity === 'high');",
+    "detect_in_project": "Use detection.file_patterns and detection.regex_patterns to scan project files",
+    "apply_transformation": "Use transformation object to determine how to fix each breaking change"
+  }
+}

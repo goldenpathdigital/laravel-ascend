@@ -1,0 +1,171 @@
+{
+  "version": "7.0",
+  "from_version": "6.x",
+  "release_date": "2020-03-03",
+  "estimated_time_minutes": 15,
+  "php_requirement": {
+    "minimum": "7.2.5",
+    "recommended": "7.4.0",
+    "supported": ["7.2", "7.3", "7.4", "8.0"]
+  },
+  "breaking_changes": [
+    {
+      "id": "symfony-5-method-signatures",
+      "title": "Exception Handler Method Signatures",
+      "category": "syntax",
+      "severity": "high",
+      "automatable": true,
+      "description": "Exception handler methods must accept Throwable instead of Exception",
+      "detection": {
+        "file_patterns": [
+          "app/Exceptions/Handler.php",
+          "app/Jobs/**/*.php"
+        ],
+        "regex_patterns": [
+          "public function (report|render|shouldReport|renderForConsole).*Exception"
+        ],
+        "ast_pattern": {
+          "node_type": "Stmt_ClassMethod",
+          "method_names": ["report", "render", "shouldReport", "renderForConsole"],
+          "param_type": "Exception"
+        }
+      },
+      "transformation": {
+        "type": "type_hint_replacement",
+        "search": "Exception",
+        "replace": "Throwable",
+        "preserve_imports": true
+      },
+      "examples": {
+        "before": "public function report(Exception $exception) { }",
+        "after": "public function report(Throwable $exception) { }"
+      },
+      "references": [
+        "https://laravel.com/docs/7.x/upgrade#exception-handler-updates"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "artisan-command-return-types",
+      "title": "Artisan Command Return Values",
+      "category": "syntax",
+      "severity": "medium",
+      "automatable": true,
+      "description": "Artisan commands must return integers instead of booleans",
+      "detection": {
+        "file_patterns": [
+          "app/Console/Commands/**/*.php"
+        ],
+        "regex_patterns": [
+          "return (true|false);(?=[^}]*function handle)"
+        ],
+        "ast_pattern": {
+          "node_type": "Stmt_Return",
+          "in_method": "handle",
+          "return_type": ["true", "false"]
+        }
+      },
+      "transformation": {
+        "type": "return_value_replacement",
+        "replacements": {
+          "true": "0",
+          "false": "1"
+        }
+      },
+      "examples": {
+        "before": "public function handle()\n{\n    return true;\n}",
+        "after": "public function handle()\n{\n    return 0;\n}"
+      },
+      "references": [
+        "https://laravel.com/docs/7.x/upgrade#command-return-codes"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "date-serialization-format",
+      "title": "Date Serialization Format Change",
+      "category": "feature-removal",
+      "severity": "high",
+      "automatable": false,
+      "description": "Date serialization changed to ISO-8601 format",
+      "detection": {
+        "file_patterns": [
+          "app/Models/**/*.php",
+          "app/*.php"
+        ],
+        "regex_patterns": [
+          "protected \\$dates",
+          "protected \\$casts.*datetime"
+        ],
+        "ast_pattern": {
+          "node_type": "Stmt_Property",
+          "property_names": ["dates", "casts"]
+        }
+      },
+      "transformation": {
+        "type": "manual_override",
+        "method_to_add": "serializeDate"
+      },
+      "examples": {
+        "before": "// 2019-12-02 20:01:00",
+        "after": "// 2019-12-02T20:01:00.283041Z\n\n// Override in model:\nprotected function serializeDate(DateTimeInterface $date)\n{\n    return $date->format('Y-m-d H:i:s');\n}"
+      },
+      "impact": "API consumers may need updates",
+      "references": [
+        "https://laravel.com/docs/7.x/upgrade#date-serialization"
+      ],
+      "manual_steps": [
+        "Test API responses",
+        "Update frontend date parsing",
+        "Add serializeDate override if needed"
+      ]
+    }
+  ],
+  "dependency_changes": {
+    "php_packages": {
+      "add": {
+        "laravel/ui": "^2.0"
+      },
+      "update": {
+        "laravel/framework": "^7.0",
+        "guzzlehttp/guzzle": "^6.3",
+        "facade/ignition": "^2.0"
+      },
+      "remove": []
+    },
+    "first_party": {
+      "laravel/passport": "^9.0",
+      "laravel/horizon": "^4.0",
+      "laravel/telescope": "^3.0",
+      "laravel/scout": "^8.0"
+    }
+  },
+  "configuration_changes": [
+    {
+      "file": "config/mail.php",
+      "type": "restructure",
+      "description": "Mail configuration restructured with mailers array",
+      "automatable": false,
+      "reference": "https://laravel.com/docs/7.x/upgrade#mail-configuration"
+    },
+    {
+      "file": "config/cors.php",
+      "type": "new_file",
+      "description": "New CORS configuration file",
+      "automatable": true,
+      "command": "php artisan vendor:publish --tag=cors"
+    }
+  ],
+  "deprecations": [
+    {
+      "item": "Blade::component()",
+      "replacement": "Blade::aliasComponent()",
+      "removed_in": null
+    },
+    {
+      "item": "addHidden() / addVisible()",
+      "replacement": "makeHidden() / makeVisible()",
+      "removed_in": null
+    }
+  ]
+}

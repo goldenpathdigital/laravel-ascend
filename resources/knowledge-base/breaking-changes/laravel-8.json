@@ -1,0 +1,457 @@
+{
+  "version": "8.0",
+  "from_version": "7.x",
+  "release_date": "2020-09-08",
+  "estimated_time_minutes": 60,
+  "php_requirement": {
+    "minimum": "7.3.0",
+    "recommended": "8.0.0",
+    "supported": ["7.3", "7.4", "8.0", "8.1"]
+  },
+  "breaking_changes": [
+    {
+      "id": "php-version-requirement",
+      "title": "PHP 7.3.0 Minimum Required",
+      "category": "dependency",
+      "severity": "high",
+      "automatable": true,
+      "description": "PHP 7.3.0 minimum required, up from 7.2.5",
+      "detection": {
+        "file_patterns": ["composer.json"],
+        "regex_patterns": ["\"php\":\\s*\"\\^7\\.2\""],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "composer_version_update",
+        "search": "\"php\": \"^7.2\"",
+        "replace": "\"php\": \"^7.3\""
+      },
+      "examples": {
+        "before": "\"php\": \"^7.2\"",
+        "after": "\"php\": \"^7.3\""
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#php-7.3.0-required"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "model-factories-rewrite",
+      "title": "Factory Classes Replace Factory Functions",
+      "category": "structure",
+      "severity": "high",
+      "automatable": false,
+      "description": "Factories changed from function-based to class-based. Use laravel/legacy-factories for gradual migration or rewrite all factories",
+      "detection": {
+        "file_patterns": ["database/factories/*.php"],
+        "regex_patterns": ["\\$factory->define\\("],
+        "ast_pattern": {
+          "node_type": "Expr_MethodCall",
+          "var_name": "factory",
+          "method_name": "define"
+        }
+      },
+      "transformation": {
+        "type": "manual_rewrite",
+        "pattern_reference": "factory-class-rewrite",
+        "alternative": "composer require laravel/legacy-factories"
+      },
+      "examples": {
+        "before": "$factory->define(User::class, function (Faker $faker) {\n    return ['name' => $faker->name];\n});",
+        "after": "class UserFactory extends Factory\n{\n    protected $model = User::class;\n    \n    public function definition()\n    {\n        return ['name' => $this->faker->name()];\n    }\n}"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/database-testing#defining-model-factories",
+        "https://github.com/laravel/legacy-factories"
+      ],
+      "manual_steps": [
+        "Decide: Install laravel/legacy-factories OR rewrite factories",
+        "If rewriting: Create factory classes in Database\\Factories namespace",
+        "Add HasFactory trait to models",
+        "Update test calls: factory(User::class) → User::factory()"
+      ]
+    },
+    {
+      "id": "seeder-namespace-change",
+      "title": "Seeders Require Database\\Seeders Namespace",
+      "category": "structure",
+      "severity": "high",
+      "automatable": true,
+      "description": "Seeders must be in Database\\Seeders namespace and database/seeders directory",
+      "detection": {
+        "file_patterns": ["database/seeds/*.php"],
+        "regex_patterns": ["^<\\?php\\s*$", "^class \\w+ extends Seeder"],
+        "ast_pattern": {
+          "node_type": "Stmt_Class",
+          "extends": "Seeder",
+          "namespace_missing": true
+        }
+      },
+      "transformation": {
+        "type": "namespace_addition_and_move",
+        "steps": [
+          "Add namespace Database\\Seeders;",
+          "Move file from database/seeds/ to database/seeders/",
+          "Update composer.json autoload"
+        ]
+      },
+      "examples": {
+        "before": "<?php\n\nclass DatabaseSeeder extends Seeder\n{\n    public function run() {}\n}",
+        "after": "<?php\n\nnamespace Database\\Seeders;\n\nuse Illuminate\\Database\\Seeder;\n\nclass DatabaseSeeder extends Seeder\n{\n    public function run() {}\n}"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#seeding-and-factory-namespaces"
+      ],
+      "manual_steps": [
+        "Update composer.json autoload section",
+        "Run composer dump-autoload"
+      ]
+    },
+    {
+      "id": "models-directory-change",
+      "title": "Models Directory Change (Optional)",
+      "category": "structure",
+      "severity": "medium",
+      "automatable": true,
+      "description": "New Laravel 8 apps place models in app/Models/. Existing apps can optionally migrate",
+      "detection": {
+        "file_patterns": ["app/*.php"],
+        "regex_patterns": ["class \\w+ extends Model"],
+        "ast_pattern": {
+          "node_type": "Stmt_Class",
+          "extends": "Model",
+          "in_directory": "app/"
+        }
+      },
+      "transformation": {
+        "type": "directory_move_and_namespace",
+        "steps": [
+          "Create app/Models/ directory",
+          "Move model files to app/Models/",
+          "Update namespace from App\\ to App\\Models\\",
+          "Update all references in controllers, routes, factories, tests, config"
+        ]
+      },
+      "examples": {
+        "before": "namespace App;\n\nclass User extends Model {}",
+        "after": "namespace App\\Models;\n\nclass User extends Model {}"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#models-directory"
+      ],
+      "manual_steps": [
+        "Optional migration",
+        "Update all imports across codebase",
+        "Update config/auth.php model reference"
+      ]
+    },
+    {
+      "id": "factory-namespace-autoload",
+      "title": "Composer Autoload Must Include Factory/Seeder Namespaces",
+      "category": "config",
+      "severity": "high",
+      "automatable": true,
+      "description": "composer.json autoload must include Database\\ PSR-4 namespaces",
+      "detection": {
+        "file_patterns": ["composer.json"],
+        "regex_patterns": ["\"classmap\":\\s*\\[.*\"database/seeds\""],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "composer_autoload_update",
+        "add": {
+          "autoload.psr-4": {
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+          }
+        },
+        "remove": {
+          "autoload.classmap": ["database/seeds", "database/factories"]
+        }
+      },
+      "examples": {
+        "before": "\"autoload\": {\n    \"classmap\": [\"database/seeds\", \"database/factories\"]\n}",
+        "after": "\"autoload\": {\n    \"psr-4\": {\n        \"App\\\\\": \"app/\",\n        \"Database\\\\Factories\\\\\": \"database/factories/\",\n        \"Database\\\\Seeders\\\\\": \"database/seeders/\"\n    }\n}"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#seeding-and-factory-namespaces"
+      ],
+      "manual_steps": [
+        "Run composer dump-autoload after updating"
+      ]
+    },
+    {
+      "id": "queue-retry-after-rename",
+      "title": "retryAfter Renamed to backoff",
+      "category": "syntax",
+      "severity": "high",
+      "automatable": true,
+      "description": "Job/Mail/Notification retryAfter property/method renamed to backoff",
+      "detection": {
+        "file_patterns": [
+          "app/Jobs/**/*.php",
+          "app/Mail/**/*.php",
+          "app/Notifications/**/*.php"
+        ],
+        "regex_patterns": [
+          "public \\$retryAfter",
+          "public function retryAfter\\("
+        ],
+        "ast_pattern": {
+          "node_type": ["Stmt_Property", "Stmt_ClassMethod"],
+          "name": "retryAfter"
+        }
+      },
+      "transformation": {
+        "type": "rename",
+        "search": "retryAfter",
+        "replace": "backoff"
+      },
+      "examples": {
+        "before": "public $retryAfter = 60;",
+        "after": "public $backoff = 60;"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#the-retryafter-property"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "queue-timeout-at-rename",
+      "title": "timeoutAt Renamed to retryUntil",
+      "category": "syntax",
+      "severity": "high",
+      "automatable": true,
+      "description": "Job timeoutAt property renamed to retryUntil",
+      "detection": {
+        "file_patterns": ["app/Jobs/**/*.php"],
+        "regex_patterns": ["public \\$timeoutAt"],
+        "ast_pattern": {
+          "node_type": "Stmt_Property",
+          "name": "timeoutAt"
+        }
+      },
+      "transformation": {
+        "type": "rename",
+        "search": "timeoutAt",
+        "replace": "retryUntil"
+      },
+      "examples": {
+        "before": "public $timeoutAt;",
+        "after": "public $retryUntil;"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#the-timeoutat-property"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "queue-chain-methods-removal",
+      "title": "allOnQueue() and allOnConnection() Removed",
+      "category": "syntax",
+      "severity": "high",
+      "automatable": true,
+      "description": "Chain methods allOnQueue() and allOnConnection() removed, use onQueue()/onConnection() before dispatch()",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": [
+          "->allOnQueue\\(",
+          "->allOnConnection\\("
+        ],
+        "ast_pattern": {
+          "node_type": "Expr_MethodCall",
+          "method_name": ["allOnQueue", "allOnConnection"]
+        }
+      },
+      "transformation": {
+        "type": "method_chain_reorder",
+        "description": "Move onQueue/onConnection before dispatch() call"
+      },
+      "examples": {
+        "before": "Job::withChain([new Job2])->dispatch()->allOnQueue('queue');",
+        "after": "Job::withChain([new Job2])->onQueue('queue')->dispatch();"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#the-allonqueue-and-allonconnection-methods"
+      ],
+      "manual_steps": [
+        "Review chain order",
+        "Ensure dispatch() is last in chain"
+      ]
+    },
+    {
+      "id": "pagination-defaults-tailwind",
+      "title": "Pagination Defaults to Tailwind CSS",
+      "category": "feature-removal",
+      "severity": "medium",
+      "automatable": true,
+      "description": "Paginator now defaults to Tailwind. Bootstrap projects must call Paginator::useBootstrap()",
+      "detection": {
+        "file_patterns": ["resources/views/**/*.blade.php"],
+        "regex_patterns": ["\\{\\{\\s*\\$.*->links\\(\\)\\s*\\}\\}"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "service_provider_addition",
+        "file": "app/Providers/AppServiceProvider.php",
+        "method": "boot",
+        "code_to_add": "Paginator::useBootstrap();"
+      },
+      "examples": {
+        "before": "// AppServiceProvider boot() - empty or no pagination setup",
+        "after": "use Illuminate\\Pagination\\Paginator;\n\npublic function boot()\n{\n    Paginator::useBootstrap();\n}"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#pagination-defaults"
+      ],
+      "manual_steps": [
+        "Only needed if using Bootstrap",
+        "Tailwind projects need no changes"
+      ]
+    },
+    {
+      "id": "routing-namespace-prefix",
+      "title": "RouteServiceProvider Namespace Now Null",
+      "category": "config",
+      "severity": "medium",
+      "automatable": true,
+      "description": "RouteServiceProvider $namespace property now null, use action array or restore namespace",
+      "detection": {
+        "file_patterns": ["routes/**/*.php"],
+        "regex_patterns": ["Route::\\w+\\([^,]+,\\s*['\"][^'\"]+@"],
+        "ast_pattern": {
+          "node_type": "Expr_StaticCall",
+          "class": "Route",
+          "string_controller_syntax": true
+        }
+      },
+      "transformation": {
+        "type": "route_syntax_update",
+        "options": [
+          {
+            "name": "action_array",
+            "description": "Convert to action array syntax",
+            "example_before": "Route::get('/users', 'UserController@index');",
+            "example_after": "Route::get('/users', [UserController::class, 'index']);"
+          },
+          {
+            "name": "restore_namespace",
+            "description": "Add namespace back to RouteServiceProvider",
+            "example": "protected $namespace = 'App\\\\Http\\\\Controllers';"
+          }
+        ]
+      },
+      "examples": {
+        "before": "Route::get('/users', 'UserController@index');",
+        "after": "Route::get('/users', [UserController::class, 'index']);"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#routing"
+      ],
+      "manual_steps": [
+        "Choose migration strategy",
+        "Update all routes if using action array syntax"
+      ]
+    },
+    {
+      "id": "maintenance-mode-updates",
+      "title": "Maintenance Mode Requires Code in public/index.php",
+      "category": "feature-removal",
+      "severity": "medium",
+      "automatable": true,
+      "description": "Maintenance mode check must be added to public/index.php",
+      "detection": {
+        "file_patterns": ["public/index.php"],
+        "regex_patterns": ["LARAVEL_START"],
+        "missing_pattern": "maintenance\\.php"
+      },
+      "transformation": {
+        "type": "file_content_insertion",
+        "file": "public/index.php",
+        "after": "define('LARAVEL_START', microtime(true));",
+        "insert": "\nif (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {\n    require $maintenance;\n}\n"
+      },
+      "examples": {
+        "before": "define('LARAVEL_START', microtime(true));\n\nrequire __DIR__.'/../vendor/autoload.php';",
+        "after": "define('LARAVEL_START', microtime(true));\n\nif (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {\n    require $maintenance;\n}\n\nrequire __DIR__.'/../vendor/autoload.php';"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#maintenance-mode-updates"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "failed-jobs-uuid-column",
+      "title": "failed_jobs Table Needs UUID Column",
+      "category": "structure",
+      "severity": "medium",
+      "automatable": true,
+      "description": "failed_jobs table should have uuid column for job batching support",
+      "detection": {
+        "file_patterns": ["database/migrations/*_create_failed_jobs_table.php"],
+        "regex_patterns": ["Schema::create\\('failed_jobs'"],
+        "missing_pattern": "->uuid\\("
+      },
+      "transformation": {
+        "type": "migration_creation",
+        "command": "php artisan queue:failed-table",
+        "description": "Create new migration to add uuid column"
+      },
+      "examples": {
+        "before": "$table->id();\n$table->text('connection');",
+        "after": "$table->id();\n$table->string('uuid')->unique();\n$table->text('connection');"
+      },
+      "references": [
+        "https://laravel.com/docs/8.x/upgrade#the-failed-jobs-table"
+      ],
+      "manual_steps": [
+        "Only needed if using job batching",
+        "Run migration after creating"
+      ]
+    }
+  ],
+  "dependency_changes": {
+    "php_packages": {
+      "add": {
+        "laravel/legacy-factories": "^1.0 (optional)"
+      },
+      "update": {
+        "laravel/framework": "^8.0",
+        "laravel/ui": "^3.0",
+        "guzzlehttp/guzzle": "^7.0.1",
+        "facade/ignition": "^2.3.6"
+      },
+      "remove": []
+    },
+    "dev_packages": {
+      "update": {
+        "nunomaduro/collision": "^5.0",
+        "phpunit/phpunit": "^9.0"
+      }
+    },
+    "first_party": {
+      "laravel/passport": "^10.0",
+      "laravel/horizon": "^5.0",
+      "laravel/telescope": "^4.0",
+      "laravel/scout": "^9.0"
+    }
+  },
+  "configuration_changes": [
+    {
+      "file": "config/auth.php",
+      "type": "update",
+      "description": "Update User model path if moved to Models/",
+      "automatable": true,
+      "search": "App\\\\User",
+      "replace": "App\\\\Models\\\\User"
+    },
+    {
+      "file": "config/queue.php",
+      "type": "update",
+      "description": "Update failed driver for job batching",
+      "automatable": false,
+      "change": "failed' => env('QUEUE_FAILED_DRIVER', 'database-uuids')"
+    }
+  ],
+  "deprecations": []
+}

@@ -1,0 +1,245 @@
+{
+  "pattern_id": "accessor-mutator-attribute-syntax",
+  "name": "Accessor/Mutator Attribute Syntax (Laravel 9+)",
+  "applies_to_versions": ["8-to-9", "9-to-10", "10-to-11"],
+  "category": "syntax",
+  "complexity": "medium",
+  "description": "Converts old get/set Attribute methods to new Attribute-based syntax (optional upgrade)",
+  "optional": true,
+  "detection": {
+    "file_patterns": [
+      "app/Models/**/*.php",
+      "app/*.php"
+    ],
+    "content_patterns": [
+      "public function get",
+      "Attribute",
+      "public function set",
+      "Attribute"
+    ],
+    "ast_requirements": {
+      "node_type": "Stmt_ClassMethod",
+      "pattern": "get*Attribute|set*Attribute",
+      "in_class_extending": "Model"
+    },
+    "regex_patterns": [
+      "public function get(\\w+)Attribute\\(",
+      "public function set(\\w+)Attribute\\("
+    ]
+  },
+  "transformation": {
+    "type": "method_to_attribute_syntax",
+    "automatable": true,
+    "optional": true,
+    "backward_compatible": true,
+    "steps": [
+      {
+        "step": 1,
+        "action": "identify_accessor_mutators",
+        "description": "Find all get*Attribute and set*Attribute methods"
+      },
+      {
+        "step": 2,
+        "action": "extract_attribute_name",
+        "description": "Extract attribute name from method name"
+      },
+      {
+        "step": 3,
+        "action": "extract_logic",
+        "description": "Extract getter/setter logic"
+      },
+      {
+        "step": 4,
+        "action": "create_attribute_method",
+        "description": "Create new protected method returning Attribute"
+      },
+      {
+        "step": 5,
+        "action": "add_use_statement",
+        "description": "Add use Illuminate\\Database\\Eloquent\\Casts\\Attribute;"
+      },
+      {
+        "step": 6,
+        "action": "remove_old_methods",
+        "description": "Remove old get/set methods (optional)"
+      }
+    ],
+    "naming_convention": {
+      "old": "get{AttributeName}Attribute / set{AttributeName}Attribute",
+      "new": "{attributeName} (camelCase, no prefix/suffix)",
+      "example": "getFirstNameAttribute → firstName"
+    }
+  },
+  "examples": {
+    "simple_accessor": {
+      "before": "<?php\n\nnamespace App\\Models;\n\nuse Illuminate\\Database\\Eloquent\\Model;\n\nclass User extends Model\n{\n    public function getFirstNameAttribute($value)\n    {\n        return ucfirst($value);\n    }\n}",
+      "after": "<?php\n\nnamespace App\\Models;\n\nuse Illuminate\\Database\\Eloquent\\Model;\nuse Illuminate\\Database\\Eloquent\\Casts\\Attribute;\n\nclass User extends Model\n{\n    protected function firstName(): Attribute\n    {\n        return Attribute::make(\n            get: fn ($value) => ucfirst($value),\n        );\n    }\n}"
+    },
+    "simple_mutator": {
+      "before": "public function setPasswordAttribute($value)\n{\n    $this->attributes['password'] = bcrypt($value);\n}",
+      "after": "protected function password(): Attribute\n{\n    return Attribute::make(\n        set: fn ($value) => bcrypt($value),\n    );\n}"
+    },
+    "accessor_and_mutator": {
+      "before": "public function getFirstNameAttribute($value)\n{\n    return ucfirst($value);\n}\n\npublic function setFirstNameAttribute($value)\n{\n    $this->attributes['first_name'] = strtolower($value);\n}",
+      "after": "use Illuminate\\Database\\Eloquent\\Casts\\Attribute;\n\nprotected function firstName(): Attribute\n{\n    return Attribute::make(\n        get: fn ($value) => ucfirst($value),\n        set: fn ($value) => strtolower($value),\n    );\n}"
+    },
+    "using_other_attributes": {
+      "before": "public function getFullNameAttribute()\n{\n    return \"{$this->first_name} {$this->last_name}\";\n}",
+      "after": "protected function fullName(): Attribute\n{\n    return Attribute::make(\n        get: fn ($value, $attributes) => $attributes['first_name'] . ' ' . $attributes['last_name'],\n    );\n}"
+    },
+    "complex_logic": {
+      "before": "public function getPriceAttribute($value)\n{\n    if ($this->is_discounted) {\n        return $value * 0.9;\n    }\n    return $value;\n}",
+      "after": "protected function price(): Attribute\n{\n    return Attribute::make(\n        get: function ($value, $attributes) {\n            if ($attributes['is_discounted']) {\n                return $value * 0.9;\n            }\n            return $value;\n        },\n    );\n}"
+    },
+    "with_shouldCache": {
+      "before": "// No caching in old syntax",
+      "after": "protected function expensiveCalculation(): Attribute\n{\n    return Attribute::make(\n        get: fn () => $this->performExpensiveCalculation(),\n    )->shouldCache();\n}"
+    }
+  },
+  "validation": {
+    "checks": [
+      {
+        "type": "attribute_import_exists",
+        "error_message": "Must import Illuminate\\Database\\Eloquent\\Casts\\Attribute"
+      },
+      {
+        "type": "method_returns_attribute",
+        "error_message": "Method must return Attribute instance"
+      },
+      {
+        "type": "correct_naming",
+        "error_message": "Method name should be camelCase attribute name"
+      },
+      {
+        "type": "protected_visibility",
+        "error_message": "Attribute methods should be protected"
+      },
+      {
+        "type": "return_type_declared",
+        "error_message": "Method should declare : Attribute return type"
+      }
+    ]
+  },
+  "edge_cases": [
+    {
+      "case": "Accessing other attributes",
+      "old_syntax": "$this->other_attribute",
+      "new_syntax": "$attributes['other_attribute']",
+      "solution": "Use $attributes array in closure"
+    },
+    {
+      "case": "Multi-line logic",
+      "old_syntax": "Multiple statements in method",
+      "new_syntax": "Use full closure syntax, not arrow function",
+      "example": "get: function ($value) {\n    $result = expensive_operation($value);\n    return $result;\n}"
+    },
+    {
+      "case": "Early returns",
+      "old_syntax": "if (...) return ...; return ...;",
+      "new_syntax": "Use full closure with multiple returns",
+      "example": "get: function ($value) {\n    if ($condition) {\n        return $value;\n    }\n    return $default;\n}"
+    },
+    {
+      "case": "No value parameter needed",
+      "detection": "Calculated attribute not using $value",
+      "solution": "Omit $value parameter or use _ to indicate unused",
+      "example": "get: fn () => $this->first_name . ' ' . $this->last_name"
+    },
+    {
+      "case": "Setting to different attribute",
+      "old_syntax": "$this->attributes['other_field'] = $value",
+      "new_syntax": "Return array with field => value",
+      "example": "set: fn ($value) => ['other_field' => $value]"
+    },
+    {
+      "case": "Multiple attribute changes in mutator",
+      "old_syntax": "$this->attributes['a'] = ...; $this->attributes['b'] = ...;",
+      "new_syntax": "Return array with multiple fields",
+      "example": "set: fn ($value) => [\n    'field_a' => ...,\n    'field_b' => ...,\n]"
+    }
+  ],
+  "advanced_features": {
+    "caching": {
+      "description": "Cache computed attribute value",
+      "syntax": "->shouldCache()",
+      "example": "return Attribute::make(\n    get: fn () => $this->expensive(),\n)->shouldCache();"
+    },
+    "withoutObjectCaching": {
+      "description": "Disable object-level caching",
+      "syntax": "->withoutObjectCaching()",
+      "use_case": "When value should be recalculated on each access"
+    }
+  },
+  "conversion_patterns": {
+    "simple_transform": {
+      "pattern": "get{Name}Attribute($value) { return transform($value); }",
+      "converts_to": "{name}(): Attribute { return Attribute::make(get: fn($value) => transform($value)); }"
+    },
+    "simple_set": {
+      "pattern": "set{Name}Attribute($value) { $this->attributes['name'] = transform($value); }",
+      "converts_to": "{name}(): Attribute { return Attribute::make(set: fn($value) => transform($value)); }"
+    },
+    "calculated_attribute": {
+      "pattern": "get{Name}Attribute() { return $this->a + $this->b; }",
+      "converts_to": "{name}(): Attribute { return Attribute::make(get: fn($value, $attrs) => $attrs['a'] + $attrs['b']); }"
+    }
+  },
+  "benefits": {
+    "performance": "Attributes can be cached with ->shouldCache()",
+    "clarity": "Single method for get/set instead of two separate methods",
+    "type_safety": "Return type declaration : Attribute",
+    "consistency": "Aligns with modern PHP practices",
+    "functionality": "Access to full $attributes array in closures"
+  },
+  "migration_strategy": {
+    "gradual": {
+      "description": "Convert one model at a time",
+      "benefit": "Low risk, easy to test",
+      "approach": "Start with simple accessors, move to complex ones"
+    },
+    "coexistence": {
+      "description": "Old and new syntax can coexist",
+      "benefit": "No need to convert everything at once",
+      "note": "Same attribute can't have both syntaxes"
+    },
+    "testing": {
+      "description": "Test attribute behavior after conversion",
+      "checks": [
+        "Getter returns expected value",
+        "Setter transforms correctly",
+        "Calculated attributes work",
+        "Database saves correctly"
+      ]
+    }
+  },
+  "when_to_use_old_syntax": {
+    "scenarios": [
+      "Legacy codebase with many accessors/mutators",
+      "Team not familiar with new syntax yet",
+      "No immediate benefit from new features"
+    ],
+    "note": "Old syntax is NOT deprecated, both work in Laravel 9+"
+  },
+  "when_to_use_new_syntax": {
+    "scenarios": [
+      "New models or new attributes",
+      "Need attribute caching (->shouldCache())",
+      "Want cleaner, more modern code",
+      "Need both getter and setter for same attribute"
+    ],
+    "recommended": true
+  },
+  "ide_support": {
+    "phpstorm": "Full support with Laravel Idea plugin",
+    "vscode": "Support with Laravel extensions",
+    "note": "IDE autocomplete works for both syntaxes"
+  },
+  "testing_approach": {
+    "unit_test": "Test attribute transformation logic",
+    "example": "$user->first_name = 'john';\n$this->assertEquals('John', $user->first_name);"
+  },
+  "references": [
+    "https://laravel.com/docs/9.x/eloquent-mutators#accessors-and-mutators",
+    "https://laravel.com/docs/9.x/eloquent-mutators#defining-an-accessor"
+  ]
+}

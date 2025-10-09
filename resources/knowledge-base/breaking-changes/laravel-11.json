@@ -1,0 +1,355 @@
+{
+  "version": "11.0",
+  "from_version": "10.x",
+  "release_date": "2024-03-12",
+  "estimated_time_minutes": 45,
+  "php_requirement": {
+    "minimum": "8.2.0",
+    "recommended": "8.3.0",
+    "supported": ["8.2", "8.3", "8.4"]
+  },
+  "breaking_changes": [
+    {
+      "id": "php-version-requirement",
+      "title": "PHP 8.2.0 Minimum Required",
+      "category": "dependency",
+      "severity": "high",
+      "automatable": true,
+      "description": "PHP 8.2.0 minimum required",
+      "detection": {
+        "file_patterns": ["composer.json"],
+        "regex_patterns": ["\"php\":\\s*\"\\^8\\.1\""],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "composer_version_update",
+        "search": "\"php\": \"^8.1\"",
+        "replace": "\"php\": \"^8.2\""
+      },
+      "examples": {
+        "before": "\"php\": \"^8.1\"",
+        "after": "\"php\": \"^8.2\""
+      },
+      "references": [
+        "https://laravel.com/docs/11.x/upgrade#php-8.2.0-required"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "model-casts-method",
+      "title": "Model Casts Can Be Method",
+      "category": "syntax",
+      "severity": "medium",
+      "automatable": true,
+      "description": "Model casts can now be defined as a method (optional migration)",
+      "detection": {
+        "file_patterns": ["app/Models/**/*.php"],
+        "regex_patterns": ["protected \\$casts\\s*="],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "optional_property_to_method",
+        "description": "Convert $casts property to casts() method (optional)"
+      },
+      "examples": {
+        "before": "protected $casts = [\n    'is_admin' => 'boolean',\n];",
+        "after": "protected function casts(): array\n{\n    return [\n        'is_admin' => 'boolean',\n    ];\n}"
+      },
+      "references": [
+        "https://laravel.com/docs/11.x/eloquent-mutators#attribute-casting"
+      ],
+      "manual_steps": [
+        "Optional migration",
+        "Property syntax still works"
+      ]
+    },
+    {
+      "id": "column-modification-modifiers",
+      "title": "Column Modification Requires ALL Modifiers",
+      "category": "syntax",
+      "severity": "high",
+      "automatable": false,
+      "description": "Column modification with ->change() requires explicit declaration of ALL modifiers",
+      "detection": {
+        "file_patterns": ["database/migrations/*.php"],
+        "regex_patterns": ["->change\\(\\)"],
+        "ast_pattern": {
+          "node_type": "Expr_MethodCall",
+          "method_name": "change"
+        }
+      },
+      "transformation": {
+        "type": "manual_review_required",
+        "description": "All column modifiers must be explicitly declared when using ->change()"
+      },
+      "examples": {
+        "before": "// Laravel 10: Retains unsigned, default, comment\n$table->integer('votes')->nullable()->change();",
+        "after": "// Laravel 11: Must include ALL modifiers\n$table->integer('votes')\n    ->unsigned()\n    ->default(1)\n    ->comment('Vote count')\n    ->nullable()\n    ->change();"
+      },
+      "references": [
+        "https://laravel.com/docs/11.x/upgrade#modifying-columns"
+      ],
+      "manual_steps": [
+        "CRITICAL: Review ALL ->change() calls",
+        "Add all modifiers explicitly",
+        "Test migrations thoroughly"
+      ]
+    },
+    {
+      "id": "floating-point-column-types",
+      "title": "double/float Column Type Changes",
+      "category": "syntax",
+      "severity": "high",
+      "automatable": true,
+      "description": "double() and float() column methods changed parameter structure",
+      "detection": {
+        "file_patterns": ["database/migrations/*.php"],
+        "regex_patterns": [
+          "->double\\([^)]*,\\s*[^)]*,",
+          "->float\\([^)]*,\\s*[^)]*,"
+        ],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "parameter_removal",
+        "description": "Remove total and places parameters"
+      },
+      "examples": {
+        "before": "$table->double('amount', 8, 2);  // total, decimal places\n$table->float('price', 8, 2);",
+        "after": "$table->double('amount');  // No total/places\n$table->float('price', precision: 53);"
+      },
+      "references": [
+        "https://laravel.com/docs/11.x/upgrade#floating-point-types"
+      ],
+      "manual_steps": [
+        "Review database column precision needs"
+      ]
+    },
+    {
+      "id": "rate-limiting-per-second",
+      "title": "Rate Limiting Uses Seconds Not Minutes",
+      "category": "syntax",
+      "severity": "medium",
+      "automatable": true,
+      "description": "Rate limiters now use seconds instead of minutes",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": [
+          "new Limit\\(",
+          "new GlobalLimit\\(",
+          "ThrottlesExceptions"
+        ],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "time_unit_conversion",
+        "description": "Multiply time values by 60 to convert minutes to seconds"
+      },
+      "examples": {
+        "before": "new Limit($key, $attempts, 2);  // 2 minutes",
+        "after": "new Limit($key, $attempts, 2 * 60);  // 120 seconds"
+      },
+      "references": [
+        "https://laravel.com/docs/11.x/upgrade#rate-limiting"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "sqlite-minimum-version",
+      "title": "SQLite 3.26.0+ Required",
+      "category": "dependency",
+      "severity": "high",
+      "automatable": false,
+      "description": "SQLite 3.26.0 or higher required (was 3.8.8+)",
+      "detection": {
+        "file_patterns": ["config/database.php"],
+        "regex_patterns": ["'driver'\\s*=>\\s*'sqlite'"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "environment_check",
+        "description": "Verify SQLite version"
+      },
+      "examples": {
+        "before": "SQLite 3.8.8+",
+        "after": "SQLite 3.26.0+"
+      },
+      "references": [
+        "https://laravel.com/docs/11.x/upgrade#sqlite-3.26.0-required"
+      ],
+      "manual_steps": [
+        "Check SQLite version on all environments",
+        "Upgrade SQLite if needed"
+      ]
+    },
+    {
+      "id": "spatial-column-types",
+      "title": "Spatial Column Types Consolidated",
+      "category": "syntax",
+      "severity": "low",
+      "automatable": true,
+      "description": "Spatial types consolidated to geometry/geography with subtype",
+      "detection": {
+        "file_patterns": ["database/migrations/*.php"],
+        "regex_patterns": [
+          "->point\\(",
+          "->polygon\\(",
+          "->lineString\\("
+        ],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "method_to_parameter",
+        "description": "Convert spatial type methods to geometry() with subtype parameter"
+      },
+      "examples": {
+        "before": "$table->point('location');\n$table->polygon('area');",
+        "after": "$table->geometry('location', subtype: 'point');\n$table->geometry('area', subtype: 'polygon');"
+      },
+      "references": [
+        "https://laravel.com/docs/11.x/upgrade#spatial-types"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "doctrine-dbal-removal",
+      "title": "Doctrine DBAL No Longer Required",
+      "category": "feature-removal",
+      "severity": "medium",
+      "automatable": false,
+      "description": "Laravel no longer depends on Doctrine DBAL",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": [
+          "getDoctrineConnection",
+          "getDoctrineSchemaManager",
+          "getAllTables",
+          "getAllViews"
+        ],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "method_replacement",
+        "replacements": {
+          "Schema::getAllTables()": "Schema::getTables()",
+          "Schema::getAllViews()": "Schema::getViews()"
+        }
+      },
+      "examples": {
+        "before": "$tables = Schema::getAllTables();\n$views = Schema::getAllViews();",
+        "after": "$tables = Schema::getTables();\n$views = Schema::getViews();"
+      },
+      "references": [
+        "https://laravel.com/docs/11.x/upgrade#doctrine-dbal-removal"
+      ],
+      "manual_steps": [
+        "Review custom Doctrine DBAL usage",
+        "Install doctrine/dbal manually if needed"
+      ]
+    },
+    {
+      "id": "mariadb-dedicated-driver",
+      "title": "New MariaDB Driver Available",
+      "category": "config",
+      "severity": "low",
+      "automatable": true,
+      "description": "Dedicated MariaDB driver available",
+      "detection": {
+        "file_patterns": ["config/database.php"],
+        "regex_patterns": ["'driver'\\s*=>\\s*'mysql'"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "optional_driver_change",
+        "description": "Optionally switch to 'mariadb' driver for MariaDB databases"
+      },
+      "examples": {
+        "before": "'mysql' => [\n    'driver' => 'mysql',\n]",
+        "after": "'mariadb' => [\n    'driver' => 'mariadb',\n]"
+      },
+      "references": [
+        "https://laravel.com/docs/11.x/database#mariadb"
+      ],
+      "manual_steps": [
+        "Optional for MariaDB databases",
+        "MySQL databases should keep 'mysql' driver"
+      ]
+    },
+    {
+      "id": "carbon-3-support",
+      "title": "Carbon 2 and 3 Both Supported",
+      "category": "dependency",
+      "severity": "medium",
+      "automatable": false,
+      "description": "Carbon 2.x and 3.x both supported with behavior changes in Carbon 3",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": ["->diff", "Carbon::"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "manual_review",
+        "description": "Review Carbon date operations, especially diffIn* methods"
+      },
+      "examples": {
+        "before": "// Carbon 2: diffIn* returns int\n$days = $start->diffInDays($end);",
+        "after": "// Carbon 3: diffIn* returns float, can be negative\n$days = $start->diffInDays($end);"
+      },
+      "references": [
+        "https://laravel.com/docs/11.x/upgrade#carbon"
+      ],
+      "manual_steps": [
+        "Test date calculations",
+        "Review negative date handling"
+      ]
+    }
+  ],
+  "dependency_changes": {
+    "php_packages": {
+      "update": {
+        "laravel/framework": "^11.0"
+      }
+    },
+    "dev_packages": {
+      "update": {
+        "nunomaduro/collision": "^8.1"
+      }
+    },
+    "first_party_require_migrations": {
+      "laravel/breeze": "^2.0",
+      "laravel/cashier": "^15.0 (php artisan vendor:publish --tag=cashier-migrations)",
+      "laravel/dusk": "^8.0",
+      "laravel/jetstream": "^5.0",
+      "laravel/octane": "^2.3",
+      "laravel/passport": "^12.0 (php artisan vendor:publish --tag=passport-migrations)",
+      "laravel/sanctum": "^4.0 (php artisan vendor:publish --tag=sanctum-migrations)",
+      "laravel/scout": "^10.0",
+      "laravel/telescope": "^5.0 (php artisan vendor:publish --tag=telescope-migrations)"
+    },
+    "sqlite": {
+      "minimum": "3.26.0"
+    }
+  },
+  "configuration_changes": [
+    {
+      "file": "config/",
+      "type": "note",
+      "description": "New apps have fewer default config files. Existing apps should NOT migrate structure",
+      "automatable": false
+    }
+  ],
+  "application_structure_changes": {
+    "note": "IMPORTANT: Do NOT migrate application structure for existing apps",
+    "new_apps_only": true,
+    "changes": [
+      "Single AppServiceProvider (consolidated from 5)",
+      "bootstrap/app.php replaces Kernel classes",
+      "Middleware moved to framework",
+      "Slimmed config files",
+      "Scheduling in routes/console.php",
+      "Exception handling in bootstrap/app.php"
+    ],
+    "migration_not_recommended": "Keep Laravel 10 structure for existing applications"
+  },
+  "deprecations": []
+}

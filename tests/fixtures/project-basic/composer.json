@@ -1,0 +1,10 @@
+{
+    "require": {
+        "php": "^7.2.5",
+        "laravel/framework": "^7.0",
+        "swiftmailer/swiftmailer": "^6.0"
+    },
+    "require-dev": {
+        "pestphp/pest": "^2.0"
+    }
+}

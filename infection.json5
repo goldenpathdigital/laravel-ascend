@@ -1,0 +1,15 @@
+{
+  "source": {
+    "directories": [
+      "src"
+    ]
+  },
+  "logs": {
+    "text": "build/infection.log"
+  },
+  "mutators": {
+    "@default": true
+  },
+  "minMsi": 80,
+  "minCoveredMsi": 85
+}

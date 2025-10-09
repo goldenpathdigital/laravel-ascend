@@ -1,0 +1,363 @@
+{
+  "version": "10.0",
+  "from_version": "9.x",
+  "release_date": "2023-02-14",
+  "estimated_time_minutes": 30,
+  "php_requirement": {
+    "minimum": "8.1.0",
+    "recommended": "8.2.0",
+    "supported": ["8.1", "8.2", "8.3"]
+  },
+  "breaking_changes": [
+    {
+      "id": "php-version-requirement",
+      "title": "PHP 8.1.0 Minimum Required",
+      "category": "dependency",
+      "severity": "high",
+      "automatable": true,
+      "description": "PHP 8.1.0 minimum required",
+      "detection": {
+        "file_patterns": ["composer.json"],
+        "regex_patterns": ["\"php\":\\s*\"\\^8\\.0\""],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "composer_version_update",
+        "search": "\"php\": \"^8.0\"",
+        "replace": "\"php\": \"^8.1\""
+      },
+      "examples": {
+        "before": "\"php\": \"^8.0.2\"",
+        "after": "\"php\": \"^8.1\""
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#php-8.1.0-required"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "model-dates-property-removed",
+      "title": "Model $dates Property Completely Removed",
+      "category": "syntax",
+      "severity": "high",
+      "automatable": true,
+      "description": "Model $dates property removed, must use $casts",
+      "detection": {
+        "file_patterns": ["app/Models/**/*.php", "app/*.php"],
+        "regex_patterns": ["protected \\$dates\\s*="],
+        "ast_pattern": {
+          "node_type": "Stmt_Property",
+          "name": "dates"
+        }
+      },
+      "transformation": {
+        "type": "property_to_casts_conversion",
+        "steps": [
+          "Extract date fields from $dates array",
+          "Add to $casts with 'datetime' type",
+          "Remove $dates property"
+        ]
+      },
+      "examples": {
+        "before": "protected $dates = [\n    'deployed_at',\n    'expired_at',\n];",
+        "after": "protected $casts = [\n    'deployed_at' => 'datetime',\n    'expired_at' => 'datetime',\n];"
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#the-dates-property"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "database-expression-getvalue",
+      "title": "Database Expressions Can't Be Cast to String",
+      "category": "syntax",
+      "severity": "medium",
+      "automatable": false,
+      "description": "Database expressions no longer support string casting",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": [
+          "\\(string\\)\\s*DB::raw",
+          "->__toString\\(\\)"
+        ],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "method_call_replacement",
+        "description": "Use getValue() method instead of string cast"
+      },
+      "examples": {
+        "before": "$string = (string) DB::raw('select 1');",
+        "after": "$string = DB::raw('select 1')->getValue(\n    DB::connection()->getQueryGrammar()\n);"
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#database-expressions"
+      ],
+      "manual_steps": [
+        "Review all DB::raw() string usage"
+      ]
+    },
+    {
+      "id": "monolog-3-upgrade",
+      "title": "Monolog Upgraded to 3.x",
+      "category": "dependency",
+      "severity": "medium",
+      "automatable": false,
+      "description": "Monolog upgraded from 2.x to 3.x",
+      "detection": {
+        "file_patterns": ["config/logging.php", "**/*.php"],
+        "regex_patterns": ["use Monolog\\\\"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "manual_review",
+        "description": "Review custom Monolog configurations"
+      },
+      "examples": {
+        "before": "// Monolog 2.x custom handlers",
+        "after": "// Monolog 3.x - check handler compatibility"
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#monolog-3"
+      ],
+      "manual_steps": [
+        "Test logging functionality",
+        "Review custom log handlers"
+      ]
+    },
+    {
+      "id": "bus-dispatch-now-removed",
+      "title": "Bus::dispatchNow() Removed",
+      "category": "feature-removal",
+      "severity": "medium",
+      "automatable": true,
+      "description": "dispatchNow() and dispatch_now() removed, use dispatchSync()",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": [
+          "Bus::dispatchNow\\(",
+          "dispatch_now\\("
+        ],
+        "ast_pattern": {
+          "node_type": "Expr_StaticCall",
+          "class": "Bus",
+          "method": "dispatchNow"
+        }
+      },
+      "transformation": {
+        "type": "method_rename",
+        "replacements": {
+          "dispatchNow": "dispatchSync",
+          "dispatch_now": "dispatch_sync"
+        }
+      },
+      "examples": {
+        "before": "Bus::dispatchNow(new Job());",
+        "after": "Bus::dispatchSync(new Job());"
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#dispatch-now"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "dispatch-return-value-change",
+      "title": "dispatch() Return Value Changed",
+      "category": "syntax",
+      "severity": "medium",
+      "automatable": false,
+      "description": "dispatch() now returns job instance for non-queueable classes",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": ["dispatch\\(new"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "manual_review",
+        "description": "Review code using dispatch() return value"
+      },
+      "examples": {
+        "before": "// Return value was PendingDispatch\n$result = dispatch(new Job());",
+        "after": "// For sync jobs, returns job instance\n$result = dispatch(new Job());"
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#the-dispatch-return-value"
+      ],
+      "manual_steps": [
+        "Test dispatch return value usage"
+      ]
+    },
+    {
+      "id": "redirect-home-removed",
+      "title": "Redirect::home() Removed",
+      "category": "feature-removal",
+      "severity": "low",
+      "automatable": true,
+      "description": "Redirect::home() method removed",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": [
+          "Redirect::home\\(",
+          "redirect\\(\\)->home\\("
+        ],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "method_replacement",
+        "search": "Redirect::home()",
+        "replace": "Redirect::route('home')"
+      },
+      "examples": {
+        "before": "return Redirect::home();",
+        "after": "return Redirect::route('home');"
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#redirect-home"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "ulid-column-naming",
+      "title": "ulid() Creates 'ulid' Column",
+      "category": "structure",
+      "severity": "low",
+      "automatable": false,
+      "description": "ulid() migration method now creates 'ulid' column (was incorrectly 'uuid')",
+      "detection": {
+        "file_patterns": ["database/migrations/*.php"],
+        "regex_patterns": ["->ulid\\(\\)"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "manual_review",
+        "description": "Verify ulid column names in migrations"
+      },
+      "examples": {
+        "before": "$table->ulid(); // Created 'uuid' column (bug)",
+        "after": "$table->ulid(); // Creates 'ulid' column (fixed)\n// or\n$table->ulid('uuid'); // Specify name"
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#ulid-columns"
+      ],
+      "manual_steps": [
+        "Review existing ulid() migrations",
+        "Add explicit column name if needed"
+      ]
+    },
+    {
+      "id": "mocks-application-services-removed",
+      "title": "MocksApplicationServices Trait Removed",
+      "category": "feature-removal",
+      "severity": "medium",
+      "automatable": true,
+      "description": "Test trait MocksApplicationServices removed",
+      "detection": {
+        "file_patterns": ["tests/**/*.php"],
+        "regex_patterns": [
+          "use MocksApplicationServices",
+          "->expectsEvents\\(",
+          "->expectsJobs\\("
+        ],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "test_helper_replacement",
+        "replacements": {
+          "expectsEvents": "Event::fake",
+          "expectsJobs": "Queue::fake",
+          "doesntExpectEvents": "Event::fake",
+          "doesntExpectJobs": "Queue::fake"
+        }
+      },
+      "examples": {
+        "before": "$this->expectsEvents(OrderShipped::class);",
+        "after": "Event::fake([OrderShipped::class]);\n// ... trigger event\nEvent::assertDispatched(OrderShipped::class);"
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#mocks-application-services"
+      ],
+      "manual_steps": [
+        "Update all test mocking to use facades"
+      ]
+    },
+    {
+      "id": "rate-limiter-return-values",
+      "title": "RateLimiter::attempt() Returns Closure Value",
+      "category": "syntax",
+      "severity": "low",
+      "automatable": false,
+      "description": "RateLimiter::attempt() now returns the closure's return value",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": ["RateLimiter::attempt\\("],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "manual_review",
+        "description": "Review RateLimiter::attempt() return value usage"
+      },
+      "examples": {
+        "before": "// Returned boolean\n$result = RateLimiter::attempt('key', 10, fn() => 'done');",
+        "after": "// Returns closure value\n$result = RateLimiter::attempt('key', 10, fn() => 'done');\n// $result === 'done'"
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#rate-limiter-return-values"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "middleware-aliases-rename",
+      "title": "$routeMiddleware Renamed to $middlewareAliases",
+      "category": "config",
+      "severity": "low",
+      "automatable": true,
+      "description": "Http/Kernel.php $routeMiddleware renamed to $middlewareAliases",
+      "detection": {
+        "file_patterns": ["app/Http/Kernel.php"],
+        "regex_patterns": ["protected \\$routeMiddleware"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "property_rename",
+        "search": "$routeMiddleware",
+        "replace": "$middlewareAliases"
+      },
+      "examples": {
+        "before": "protected $routeMiddleware = [];",
+        "after": "protected $middlewareAliases = [];"
+      },
+      "references": [
+        "https://laravel.com/docs/10.x/upgrade#route-middleware"
+      ],
+      "manual_steps": []
+    }
+  ],
+  "dependency_changes": {
+    "php_packages": {
+      "update": {
+        "laravel/framework": "^10.0",
+        "laravel/sanctum": "^3.2"
+      }
+    },
+    "dev_packages": {
+      "update": {
+        "spatie/laravel-ignition": "^2.0",
+        "nunomaduro/collision": "^7.0",
+        "phpunit/phpunit": "^10.0"
+      }
+    },
+    "first_party": {
+      "laravel/passport": "^11.0",
+      "laravel/sanctum": "^3.2 (requires migration for expires_at column)"
+    }
+  },
+  "configuration_changes": [
+    {
+      "file": "phpunit.xml",
+      "type": "update",
+      "description": "PHPUnit 10 configuration updates (optional)",
+      "automatable": false
+    }
+  ],
+  "deprecations": []
+}

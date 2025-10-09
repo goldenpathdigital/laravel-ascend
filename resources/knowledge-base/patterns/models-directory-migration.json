@@ -1,0 +1,265 @@
+{
+  "pattern_id": "models-directory-migration",
+  "name": "Models Directory Migration (Laravel 8)",
+  "applies_to_versions": ["7-to-8"],
+  "category": "structure",
+  "complexity": "medium",
+  "description": "Moves Eloquent models from app/ to app/Models/ with namespace update (optional but recommended)",
+  "detection": {
+    "file_patterns": [
+      "app/*.php"
+    ],
+    "content_patterns": [
+      "extends Model",
+      "use Illuminate\\Database\\Eloquent\\Model"
+    ],
+    "ast_requirements": {
+      "node_type": "Stmt_Class",
+      "extends": "Model",
+      "in_directory": "app/"
+    },
+    "exclusions": [
+      "app/Console/**",
+      "app/Exceptions/**",
+      "app/Http/**",
+      "app/Providers/**",
+      "app/Events/**",
+      "app/Jobs/**",
+      "app/Listeners/**",
+      "app/Mail/**",
+      "app/Notifications/**",
+      "app/Policies/**",
+      "app/Rules/**"
+    ]
+  },
+  "transformation": {
+    "type": "directory_move_and_namespace",
+    "automatable": true,
+    "optional": true,
+    "steps": [
+      {
+        "step": 1,
+        "action": "identify_model_files",
+        "description": "Find all Eloquent model files in app/ root"
+      },
+      {
+        "step": 2,
+        "action": "create_models_directory",
+        "description": "Create app/Models/ directory if not exists"
+      },
+      {
+        "step": 3,
+        "action": "update_namespaces",
+        "description": "Change namespace from App to App\\Models in each model"
+      },
+      {
+        "step": 4,
+        "action": "move_files",
+        "description": "Move model files to app/Models/"
+      },
+      {
+        "step": 5,
+        "action": "find_all_references",
+        "description": "Scan entire codebase for model imports and usage"
+      },
+      {
+        "step": 6,
+        "action": "update_imports",
+        "description": "Update use statements from App\\Model to App\\Models\\Model"
+      },
+      {
+        "step": 7,
+        "action": "update_string_references",
+        "description": "Update string class references (config, routes, etc.)"
+      },
+      {
+        "step": 8,
+        "action": "update_relationships",
+        "description": "Update relationship return types and FQCNs"
+      }
+    ],
+    "files_to_scan_for_references": [
+      "app/**/*.php",
+      "routes/**/*.php",
+      "config/**/*.php",
+      "database/factories/**/*.php",
+      "database/seeders/**/*.php",
+      "tests/**/*.php"
+    ]
+  },
+  "examples": {
+    "model_file_change": {
+      "before": "<?php\n// app/User.php\n\nnamespace App;\n\nuse Illuminate\\Database\\Eloquent\\Model;\n\nclass User extends Model\n{\n    //\n}",
+      "after": "<?php\n// app/Models/User.php\n\nnamespace App\\Models;\n\nuse Illuminate\\Database\\Eloquent\\Model;\n\nclass User extends Model\n{\n    //\n}"
+    },
+    "controller_import": {
+      "before": "<?php\n// app/Http/Controllers/UserController.php\n\nnamespace App\\Http\\Controllers;\n\nuse App\\User;\n\nclass UserController extends Controller\n{\n    public function index()\n    {\n        return User::all();\n    }\n}",
+      "after": "<?php\n// app/Http/Controllers/UserController.php\n\nnamespace App\\Http\\Controllers;\n\nuse App\\Models\\User;\n\nclass UserController extends Controller\n{\n    public function index()\n    {\n        return User::all();\n    }\n}"
+    },
+    "config_auth": {
+      "before": "// config/auth.php\n'providers' => [\n    'users' => [\n        'driver' => 'eloquent',\n        'model' => App\\User::class,\n    ],\n],",
+      "after": "// config/auth.php\n'providers' => [\n    'users' => [\n        'driver' => 'eloquent',\n        'model' => App\\Models\\User::class,\n    ],\n],"
+    },
+    "route_model_binding": {
+      "before": "// routes/api.php\nRoute::get('/users/{user}', function (App\\User $user) {\n    return $user;\n});",
+      "after": "// routes/api.php\nRoute::get('/users/{user}', function (App\\Models\\User $user) {\n    return $user;\n});"
+    },
+    "factory_definition": {
+      "before": "// database/factories/UserFactory.php\n\nnamespace Database\\Factories;\n\nuse App\\User;\nuse Illuminate\\Database\\Eloquent\\Factories\\Factory;\n\nclass UserFactory extends Factory\n{\n    protected $model = User::class;\n}",
+      "after": "// database/factories/UserFactory.php\n\nnamespace Database\\Factories;\n\nuse App\\Models\\User;\nuse Illuminate\\Database\\Eloquent\\Factories\\Factory;\n\nclass UserFactory extends Factory\n{\n    protected $model = User::class;\n}"
+    },
+    "relationship_return_type": {
+      "before": "public function posts()\n{\n    return $this->hasMany('App\\Post');\n}",
+      "after": "public function posts()\n{\n    return $this->hasMany('App\\Models\\Post');\n}\n\n// Better: use class constant\npublic function posts()\n{\n    return $this->hasMany(Post::class);\n}"
+    }
+  },
+  "reference_patterns": {
+    "use_statements": {
+      "regex": "use App\\\\(\\w+);",
+      "replacement": "use App\\\\Models\\\\$1;",
+      "applies_to": "*.php"
+    },
+    "class_strings": {
+      "regex": "'App\\\\\\\\(\\w+)'",
+      "replacement": "'App\\\\\\\\Models\\\\\\\\$1'",
+      "applies_to": "config/*.php, routes/*.php"
+    },
+    "double_colon": {
+      "regex": "App\\\\\\\\(\\w+)::",
+      "replacement": "App\\\\\\\\Models\\\\\\\\$1::",
+      "applies_to": "*.php"
+    },
+    "type_hints": {
+      "regex": "function .*\\(App\\\\\\\\(\\w+) \\$",
+      "replacement": "function (App\\\\\\\\Models\\\\\\\\$1 $",
+      "applies_to": "*.php"
+    }
+  },
+  "validation": {
+    "checks": [
+      {
+        "type": "models_directory_exists",
+        "path": "app/Models/",
+        "error_message": "app/Models/ directory must exist"
+      },
+      {
+        "type": "models_have_correct_namespace",
+        "namespace": "App\\Models",
+        "error_message": "All models must have App\\Models namespace"
+      },
+      {
+        "type": "no_models_in_app_root",
+        "error_message": "No Eloquent models should remain in app/ root"
+      },
+      {
+        "type": "all_imports_updated",
+        "error_message": "All use App\\Model statements must be updated"
+      },
+      {
+        "type": "config_references_updated",
+        "files": ["config/auth.php"],
+        "error_message": "Config files must reference App\\Models\\*"
+      },
+      {
+        "type": "syntax_valid",
+        "error_message": "All files must have valid PHP syntax after update"
+      }
+    ]
+  },
+  "edge_cases": [
+    {
+      "case": "Model with same name as directory",
+      "example": "App\\Post vs App\\Http\\Post",
+      "solution": "Only move Eloquent models, check extends Model"
+    },
+    {
+      "case": "Polymorphic relationships",
+      "detection": "morphTo()",
+      "solution": "Update morph map in service provider if using custom morph map",
+      "example": "Relation::morphMap([\n    'user' => 'App\\\\Models\\\\User',\n]);"
+    },
+    {
+      "case": "String-based relationship definitions",
+      "detection": "hasMany('App\\\\Model')",
+      "solution": "Update string to App\\\\Models\\\\Model or use ::class",
+      "recommended": "Convert to Model::class syntax"
+    },
+    {
+      "case": "Observer registration",
+      "detection": "Model::observe()",
+      "solution": "Update observer references if they use string class names"
+    },
+    {
+      "case": "Policy auto-discovery",
+      "detection": "Policies defined in AuthServiceProvider",
+      "solution": "Update model references in $policies array",
+      "example": "'App\\\\Models\\\\Post' => PostPolicy::class"
+    },
+    {
+      "case": "Queue job serialization",
+      "detection": "Jobs with model properties",
+      "solution": "Test queued jobs still work after namespace change",
+      "note": "Laravel uses SerializesModels trait"
+    }
+  ],
+  "critical_files_to_update": [
+    {
+      "file": "config/auth.php",
+      "keys": ["providers.users.model"]
+    },
+    {
+      "file": "app/Providers/AuthServiceProvider.php",
+      "section": "$policies array"
+    },
+    {
+      "file": "app/Providers/RouteServiceProvider.php",
+      "section": "Route model bindings"
+    },
+    {
+      "file": "database/factories/**/*.php",
+      "section": "protected $model property and use statements"
+    },
+    {
+      "file": "database/seeders/**/*.php",
+      "section": "use statements"
+    }
+  ],
+  "automated_detection_script": {
+    "description": "Find all references to moved models",
+    "command": "grep -r 'use App\\\\\\\\[A-Z]' app/ config/ routes/ database/ tests/ --include=\\*.php"
+  },
+  "rollback_instructions": [
+    "Move files from app/Models/ back to app/",
+    "Change namespace from App\\Models to App",
+    "Revert all use statement updates",
+    "Revert config file updates",
+    "Test application thoroughly"
+  ],
+  "benefits": [
+    "Aligns with Laravel 8+ convention",
+    "Better code organization",
+    "Clearer separation of concerns",
+    "Easier to locate models"
+  ],
+  "migration_notes": [
+    "This is OPTIONAL for existing Laravel 8 apps",
+    "New Laravel 8+ apps have this structure by default",
+    "Consider team preference and project size",
+    "Can be done gradually (move models one by one)",
+    "Requires comprehensive testing after migration"
+  ],
+  "testing_checklist": [
+    "All routes work correctly",
+    "Model relationships load properly",
+    "Factories create models successfully",
+    "Seeders run without errors",
+    "Authentication works",
+    "Policy authorization works",
+    "Queued jobs with models work",
+    "API responses serialize correctly"
+  ],
+  "references": [
+    "https://laravel.com/docs/8.x/upgrade#models-directory",
+    "https://laravel.com/docs/8.x/eloquent#defining-models"
+  ]
+}

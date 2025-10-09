@@ -1,0 +1,272 @@
+{
+  "pattern_id": "swiftmailer-to-symfony-mailer",
+  "name": "SwiftMailer to Symfony Mailer Migration (Laravel 9)",
+  "applies_to_versions": ["8-to-9"],
+  "category": "dependency",
+  "complexity": "high",
+  "description": "Migrates from SwiftMailer to Symfony Mailer with API changes and driver updates",
+  "detection": {
+    "file_patterns": [
+      "app/Mail/**/*.php",
+      "app/Notifications/**/*.php",
+      "app/**/*.php",
+      "config/mail.php"
+    ],
+    "content_patterns": [
+      "withSwiftMessage",
+      "getSwiftMessage",
+      "Swift_",
+      "SwiftMailer"
+    ],
+    "ast_requirements": {
+      "method_calls": [
+        "withSwiftMessage",
+        "getSwiftMessage",
+        "getSwiftMailer"
+      ]
+    }
+  },
+  "transformation": {
+    "type": "library_migration",
+    "automatable": false,
+    "requires_manual_review": true,
+    "steps": [
+      {
+        "step": 1,
+        "action": "update_mail_dependencies",
+        "description": "Update composer dependencies for mail drivers",
+        "packages": {
+          "mailgun": "symfony/mailgun-mailer symfony/http-client",
+          "postmark": "symfony/postmark-mailer symfony/http-client",
+          "sendgrid": "symfony/sendgrid-mailer symfony/http-client"
+        }
+      },
+      {
+        "step": 2,
+        "action": "rename_methods",
+        "description": "Rename Swift* methods to Symfony* equivalents"
+      },
+      {
+        "step": 3,
+        "action": "update_message_customization",
+        "description": "Update message header/attachment manipulation"
+      },
+      {
+        "step": 4,
+        "action": "test_mail_sending",
+        "description": "Thoroughly test all mail functionality",
+        "critical": true
+      }
+    ],
+    "method_mappings": {
+      "withSwiftMessage": "withSymfonyMessage",
+      "getSwiftMessage": "getSymfonyMessage",
+      "getSwiftMailer": "getSymfonyTransport"
+    }
+  },
+  "examples": {
+    "basic_message_customization": {
+      "before": "<?php\n\nnamespace App\\Mail;\n\nuse Illuminate\\Mail\\Mailable;\n\nclass OrderShipped extends Mailable\n{\n    public function build()\n    {\n        return $this->view('emails.orders.shipped')\n            ->withSwiftMessage(function ($message) {\n                $message->getHeaders()\n                    ->addTextHeader('X-Custom-Header', 'HeaderValue');\n            });\n    }\n}",
+      "after": "<?php\n\nnamespace App\\Mail;\n\nuse Illuminate\\Mail\\Mailable;\nuse Symfony\\Component\\Mime\\Email;\n\nclass OrderShipped extends Mailable\n{\n    public function build()\n    {\n        return $this->view('emails.orders.shipped')\n            ->withSymfonyMessage(function (Email $message) {\n                $message->getHeaders()\n                    ->addTextHeader('X-Custom-Header', 'HeaderValue');\n            });\n    }\n}"
+    },
+    "priority_header": {
+      "before": "$this->withSwiftMessage(function ($message) {\n    $message->setPriority(1); // High priority\n});",
+      "after": "$this->withSymfonyMessage(function (Email $message) {\n    $message->priority(Email::PRIORITY_HIGH);\n});"
+    },
+    "attachments": {
+      "before": "$this->withSwiftMessage(function ($message) {\n    $message->attach(\n        Swift_Attachment::fromPath($path)\n    );\n});",
+      "after": "// Use Mailable's built-in attach method instead\n$this->attach($path);\n\n// Or with Symfony:\n$this->withSymfonyMessage(function (Email $message) {\n    $message->attachFromPath($path);\n});"
+    },
+    "custom_headers": {
+      "before": "$this->withSwiftMessage(function ($message) {\n    $message->getHeaders()->addTextHeader('X-Tag', 'welcome');\n    $message->getHeaders()->addTextHeader('X-Category', 'notifications');\n});",
+      "after": "use Symfony\\Component\\Mime\\Email;\n\n$this->withSymfonyMessage(function (Email $message) {\n    $message->getHeaders()->addTextHeader('X-Tag', 'welcome');\n    $message->getHeaders()->addTextHeader('X-Category', 'notifications');\n});"
+    },
+    "get_message_id": {
+      "before": "$messageId = $this->getSwiftMessage()->getId();",
+      "after": "$messageId = $this->getSymfonyMessage()->getHeaders()->get('Message-ID')->getBodyAsString();"
+    }
+  },
+  "validation": {
+    "checks": [
+      {
+        "type": "no_swift_methods",
+        "error_message": "No Swift* methods should remain"
+      },
+      {
+        "type": "symfony_imports_added",
+        "error_message": "Symfony\\Component\\Mime\\Email must be imported where needed"
+      },
+      {
+        "type": "mail_drivers_updated",
+        "error_message": "Mail driver packages must be updated"
+      },
+      {
+        "type": "mail_sending_tested",
+        "error_message": "All mail functionality must be tested",
+        "manual": true
+      }
+    ]
+  },
+  "edge_cases": [
+    {
+      "case": "Custom message headers",
+      "detection": "getHeaders()->add",
+      "solution": "Symfony Mailer has similar API, update method calls",
+      "requires_review": true
+    },
+    {
+      "case": "Inline attachments",
+      "detection": "Swift_Image::from",
+      "solution": "Use Mailable's embed() method or Symfony's embed()",
+      "example": "$this->embed($pathToImage)"
+    },
+    {
+      "case": "Raw message access",
+      "detection": "getSwiftMessage()->toString()",
+      "solution": "Use getSymfonyMessage()->toString()",
+      "note": "API is similar but check return format"
+    },
+    {
+      "case": "Mail transport customization",
+      "detection": "getSwiftMailer()",
+      "solution": "Use getSymfonyTransport()",
+      "note": "Transport API has changed significantly"
+    },
+    {
+      "case": "Message ID generation",
+      "detection": "Swift_Message::generateId()",
+      "solution": "Handled automatically by Symfony Mailer",
+      "note": "Custom ID generation rarely needed"
+    },
+    {
+      "case": "Mailgun/Postmark specific features",
+      "detection": "Mailgun/Postmark headers",
+      "solution": "Update to use Symfony Mailer driver-specific features",
+      "requires_documentation_review": true
+    }
+  ],
+  "driver_updates": {
+    "mailgun": {
+      "old_package": "swiftmailer/swiftmailer (included)",
+      "new_packages": [
+        "symfony/mailgun-mailer",
+        "symfony/http-client"
+      ],
+      "composer_command": "composer require symfony/mailgun-mailer symfony/http-client"
+    },
+    "postmark": {
+      "old_package": "wildbit/swiftmailer-postmark",
+      "new_packages": [
+        "symfony/postmark-mailer",
+        "symfony/http-client"
+      ],
+      "composer_command": "composer require symfony/postmark-mailer symfony/http-client",
+      "remove_old": "composer remove wildbit/swiftmailer-postmark"
+    },
+    "sendgrid": {
+      "old_package": "s-ichikawa/laravel-sendgrid-driver",
+      "new_packages": [
+        "symfony/sendgrid-mailer",
+        "symfony/http-client"
+      ],
+      "composer_command": "composer require symfony/sendgrid-mailer symfony/http-client"
+    },
+    "smtp": {
+      "note": "No additional packages needed, built into Symfony Mailer"
+    },
+    "ses": {
+      "note": "AWS SES support built-in, no additional packages needed"
+    }
+  },
+  "api_changes": {
+    "priority": {
+      "swift": "$message->setPriority(1) // 1-5",
+      "symfony": "$message->priority(Email::PRIORITY_HIGH) // Constants",
+      "constants": [
+        "Email::PRIORITY_HIGHEST (1)",
+        "Email::PRIORITY_HIGH (2)",
+        "Email::PRIORITY_NORMAL (3)",
+        "Email::PRIORITY_LOW (4)",
+        "Email::PRIORITY_LOWEST (5)"
+      ]
+    },
+    "attachments": {
+      "swift": "attach(Swift_Attachment::fromPath($path))",
+      "symfony": "attachFromPath($path)",
+      "mailable": "$this->attach($path) // Recommended"
+    },
+    "inline_images": {
+      "swift": "embed(Swift_Image::fromPath($path))",
+      "symfony": "embed(file_get_contents($path), 'image.jpg')",
+      "mailable": "$this->embed($path) // Recommended"
+    },
+    "headers": {
+      "swift": "getHeaders()->addTextHeader('X-Custom', 'value')",
+      "symfony": "getHeaders()->addTextHeader('X-Custom', 'value') // Same API",
+      "note": "Header API is mostly compatible"
+    }
+  },
+  "testing_strategy": {
+    "unit_tests": [
+      "Test mailable builds without errors",
+      "Verify headers are set correctly",
+      "Check attachments are included"
+    ],
+    "integration_tests": [
+      "Send test emails through each driver",
+      "Verify emails are received correctly",
+      "Check inline images render",
+      "Validate custom headers arrive"
+    ],
+    "manual_testing": [
+      "Send password reset emails",
+      "Send notification emails",
+      "Send order confirmation emails",
+      "Test each mail driver in use"
+    ]
+  },
+  "common_issues": {
+    "message_not_sent": {
+      "symptom": "Emails not sending after upgrade",
+      "cause": "Missing Symfony Mailer driver package",
+      "solution": "Install required symfony/*-mailer package"
+    },
+    "headers_not_working": {
+      "symptom": "Custom headers not appearing",
+      "cause": "Wrong header API usage",
+      "solution": "Review Symfony Mailer header documentation"
+    },
+    "attachments_missing": {
+      "symptom": "Attachments not included",
+      "cause": "Wrong attachment method",
+      "solution": "Use Mailable's attach() or Symfony's attachFromPath()"
+    }
+  },
+  "rollback_plan": {
+    "if_issues_found": [
+      "Document specific issues encountered",
+      "Check Symfony Mailer documentation",
+      "Review Laravel 9 mail documentation",
+      "Consider temporary workarounds",
+      "Plan for fixing in next release"
+    ],
+    "note": "Cannot rollback to SwiftMailer in Laravel 9, must fix forward"
+  },
+  "migration_checklist": [
+    "✓ Update composer dependencies for mail drivers",
+    "✓ Replace all withSwiftMessage() calls",
+    "✓ Replace all getSwiftMessage() calls",
+    "✓ Update message customization code",
+    "✓ Add Symfony\\Component\\Mime\\Email imports",
+    "✓ Test all mailables",
+    "✓ Test all notifications with mail channel",
+    "✓ Test password reset emails",
+    "✓ Test all mail drivers in use",
+    "✓ Monitor production mail logs"
+  ],
+  "references": [
+    "https://laravel.com/docs/9.x/upgrade#symfony-mailer",
+    "https://symfony.com/doc/current/mailer.html",
+    "https://laravel.com/docs/9.x/mail"
+  ]
+}

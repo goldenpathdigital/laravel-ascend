@@ -1,0 +1,59 @@
+{
+  "name": "goldenpathdigital/laravel-ascend",
+  "description": "Ascend is an MCP-compatible server and toolkit that upgrades Laravel apps with structured docs and analyzers.",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "laravel",
+    "ascend",
+    "mcp",
+    "upgrade",
+    "automation"
+  ],
+  "require": {
+    "php": "^7.4 || ^8.0",
+    "league/commonmark": "^2.0",
+    "nikic/php-parser": "^4.13 || ^5.0",
+    "psr/log": "^1.1 || ^2.0 || ^3.0",
+    "symfony/process": "^5.4 || ^6.0 || ^7.0"
+  },
+  "require-dev": {
+    "pestphp/pest": "^1.22 || ^2.0 || ^3.0",
+    "phpstan/phpstan": "^1.10",
+    "friendsofphp/php-cs-fixer": "^3.0",
+    "infection/infection": "^0.26"
+  },
+  "autoload": {
+    "psr-4": {
+      "GoldenPathDigital\\LaravelAscend\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "GoldenPathDigital\\LaravelAscend\\Tests\\": "tests/",
+      "Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "pest --colors=always",
+    "typecheck": "phpstan analyse --memory-limit=1G",
+    "format": "php-cs-fixer fix --diff --verbose",
+    "lint": "php -l $(git ls-files '*.php')",
+    "coverage": "XDEBUG_MODE=coverage pest --coverage",
+    "mutate": "infection --min-msi=80 --min-covered-msi=85",
+    "security:audit": "@composer audit --no-interaction"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "GoldenPathDigital\\LaravelAscend\\Providers\\AscendServiceProvider"
+      ]
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "infection/extension-installer": true,
+      "pestphp/pest-plugin": true
+    }
+  }
+}

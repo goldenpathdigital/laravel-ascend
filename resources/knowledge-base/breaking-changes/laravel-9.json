@@ -1,0 +1,440 @@
+{
+  "version": "9.0",
+  "from_version": "8.x",
+  "release_date": "2022-02-08",
+  "estimated_time_minutes": 90,
+  "php_requirement": {
+    "minimum": "8.0.2",
+    "recommended": "8.1.0",
+    "supported": ["8.0", "8.1"]
+  },
+  "breaking_changes": [
+    {
+      "id": "php-version-requirement",
+      "title": "PHP 8.0.2 Minimum Required",
+      "category": "dependency",
+      "severity": "high",
+      "automatable": true,
+      "description": "PHP 8.0.2 minimum required (PHP 8.1+ for full Enum support)",
+      "detection": {
+        "file_patterns": ["composer.json"],
+        "regex_patterns": ["\"php\":\\s*\"\\^7\\."],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "composer_version_update",
+        "search": "\"php\": \"^7.x\"",
+        "replace": "\"php\": \"^8.0.2\""
+      },
+      "examples": {
+        "before": "\"php\": \"^7.3\"",
+        "after": "\"php\": \"^8.0.2\""
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/upgrade#php-8.0.2-required"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "anonymous-migrations",
+      "title": "Anonymous Migration Classes",
+      "category": "structure",
+      "severity": "medium",
+      "automatable": true,
+      "description": "Migrations now use anonymous classes to prevent class name collisions",
+      "detection": {
+        "file_patterns": ["database/migrations/*.php"],
+        "regex_patterns": ["^class \\w+ extends Migration"],
+        "ast_pattern": {
+          "node_type": "Stmt_Class",
+          "extends": "Migration",
+          "anonymous": false
+        }
+      },
+      "transformation": {
+        "type": "class_to_anonymous",
+        "steps": [
+          "Remove class name",
+          "Wrap in return new class extends Migration { }"
+        ]
+      },
+      "examples": {
+        "before": "<?php\n\nuse Illuminate\\Database\\Migrations\\Migration;\n\nclass CreateUsersTable extends Migration\n{\n    public function up() {}\n    public function down() {}\n}",
+        "after": "<?php\n\nuse Illuminate\\Database\\Migrations\\Migration;\n\nreturn new class extends Migration\n{\n    public function up() {}\n    public function down() {}\n};"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/upgrade#anonymous-stub-migrations"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "flysystem-3-upgrade",
+      "title": "Flysystem 3.x Breaking Changes",
+      "category": "dependency",
+      "severity": "high",
+      "automatable": false,
+      "description": "Flysystem upgraded from 1.x to 3.x with significant API changes",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": ["Storage::", "\\$disk->"],
+        "ast_pattern": {
+          "node_type": "Expr_StaticCall",
+          "class": "Storage"
+        }
+      },
+      "transformation": {
+        "type": "manual_review",
+        "key_changes": [
+          "Write operations overwrite by default (no exception)",
+          "Write failures return false instead of throwing",
+          "Reading missing files returns null",
+          "Cached adapters removed"
+        ]
+      },
+      "examples": {
+        "before": "// Old: putFile threw exception if exists\nStorage::putFile('path', $file);",
+        "after": "// New: overwrites by default\nStorage::putFile('path', $file);\n\n// Add 'throw' => true to disk config for exceptions\n'local' => [\n    'driver' => 'local',\n    'throw' => true,\n]"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/upgrade#flysystem-3"
+      ],
+      "manual_steps": [
+        "Review all Storage:: calls",
+        "Add 'throw' => true to disk configs if needed",
+        "Test file operations thoroughly",
+        "Update S3/FTP/SFTP driver packages"
+      ]
+    },
+    {
+      "id": "symfony-mailer-transition",
+      "title": "SwiftMailer Replaced with Symfony Mailer",
+      "category": "dependency",
+      "severity": "high",
+      "automatable": false,
+      "description": "SwiftMailer completely replaced with Symfony Mailer",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": [
+          "withSwiftMessage",
+          "getSwiftMessage",
+          "Swift_"
+        ],
+        "ast_pattern": {
+          "node_type": "Expr_MethodCall",
+          "method_name": ["withSwiftMessage", "getSwiftMessage"]
+        }
+      },
+      "transformation": {
+        "type": "method_rename_and_update",
+        "replacements": {
+          "withSwiftMessage": "withSymfonyMessage",
+          "getSwiftMessage": "getSymfonyMessage",
+          "getSwiftMailer": "getSymfonyTransport"
+        }
+      },
+      "examples": {
+        "before": "$this->withSwiftMessage(function ($message) {\n    $message->getHeaders()->addTextHeader('X-Custom', 'value');\n});",
+        "after": "use Symfony\\Component\\Mime\\Email;\n\n$this->withSymfonyMessage(function (Email $message) {\n    $message->getHeaders()->addTextHeader('X-Custom', 'value');\n});"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/upgrade#symfony-mailer"
+      ],
+      "manual_steps": [
+        "Update mail driver packages (Mailgun, Postmark, etc)",
+        "Review all mail customizations",
+        "Test email sending thoroughly"
+      ]
+    },
+    {
+      "id": "php-return-types",
+      "title": "PHP 8 Return Type Requirements",
+      "category": "syntax",
+      "severity": "medium",
+      "automatable": true,
+      "description": "Classes implementing PHP interfaces must have proper return types",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": [
+          "implements.*Countable",
+          "implements.*IteratorAggregate",
+          "implements.*JsonSerializable"
+        ],
+        "ast_pattern": {
+          "node_type": "Stmt_Class",
+          "implements": ["Countable", "IteratorAggregate", "JsonSerializable"]
+        }
+      },
+      "transformation": {
+        "type": "return_type_addition",
+        "required_types": {
+          "count": "int",
+          "getIterator": "Traversable",
+          "jsonSerialize": "mixed"
+        }
+      },
+      "examples": {
+        "before": "public function count() { return 0; }",
+        "after": "public function count(): int { return 0; }"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/upgrade#php-return-types"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "eloquent-accessor-mutator-syntax",
+      "title": "New Attribute-Based Accessor/Mutator Syntax",
+      "category": "syntax",
+      "severity": "low",
+      "automatable": true,
+      "description": "New Attribute syntax available (old syntax still works)",
+      "detection": {
+        "file_patterns": ["app/Models/**/*.php"],
+        "regex_patterns": [
+          "public function get\\w+Attribute",
+          "public function set\\w+Attribute"
+        ],
+        "ast_pattern": {
+          "node_type": "Stmt_ClassMethod",
+          "pattern": "get*Attribute|set*Attribute"
+        }
+      },
+      "transformation": {
+        "type": "optional_syntax_update",
+        "description": "Convert to Attribute-based syntax (optional)"
+      },
+      "examples": {
+        "before": "public function getFirstNameAttribute($value)\n{\n    return ucfirst($value);\n}",
+        "after": "use Illuminate\\Database\\Eloquent\\Casts\\Attribute;\n\nprotected function firstName(): Attribute\n{\n    return Attribute::make(\n        get: fn ($value) => ucfirst($value),\n    );\n}"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/eloquent-mutators#accessors-and-mutators"
+      ],
+      "manual_steps": [
+        "Optional upgrade",
+        "Old syntax continues to work"
+      ]
+    },
+    {
+      "id": "enum-casting-support",
+      "title": "PHP 8.1 Enum Casting Support",
+      "category": "feature",
+      "severity": "low",
+      "automatable": false,
+      "description": "Native PHP 8.1 Enum casting support in Eloquent",
+      "detection": {
+        "file_patterns": ["app/Models/**/*.php"],
+        "regex_patterns": ["protected \\$casts"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "feature_addition",
+        "description": "Can now cast to PHP 8.1 Enums"
+      },
+      "examples": {
+        "before": "// No enum support",
+        "after": "enum OrderStatus: string {\n    case PENDING = 'pending';\n    case COMPLETED = 'completed';\n}\n\nprotected $casts = [\n    'status' => OrderStatus::class,\n];"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/eloquent-mutators#enum-casting"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "postgres-schema-configuration",
+      "title": "Postgres 'schema' Config Renamed",
+      "category": "config",
+      "severity": "medium",
+      "automatable": true,
+      "description": "Postgres connection 'schema' config renamed to 'search_path'",
+      "detection": {
+        "file_patterns": ["config/database.php"],
+        "regex_patterns": ["'schema'\\s*=>.*pgsql"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "config_key_rename",
+        "search": "'schema'",
+        "replace": "'search_path'"
+      },
+      "examples": {
+        "before": "'pgsql' => [\n    'schema' => 'public',\n]",
+        "after": "'pgsql' => [\n    'search_path' => 'public',\n]"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/upgrade#postgres-schema-configuration"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "when-unless-closure-evaluation",
+      "title": "when/unless Execute Closures for Condition",
+      "category": "syntax",
+      "severity": "medium",
+      "automatable": false,
+      "description": "when/unless methods now execute closures to determine condition",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": [
+          "->when\\(function",
+          "->unless\\(function"
+        ],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "manual_review",
+        "description": "Review closure-based when/unless conditions"
+      },
+      "examples": {
+        "before": "// Closure passed directly was not evaluated\n$query->when(function() { return true; }, ...);\n// ^ Condition was truthy (closure exists)",
+        "after": "// Now closure is executed\n$query->when(function() { return true; }, ...);\n// ^ Condition is result of closure (true)"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/upgrade#the-when-and-unless-methods"
+      ],
+      "manual_steps": [
+        "Review all when/unless with closures",
+        "Ensure intended behavior"
+      ]
+    },
+    {
+      "id": "http-client-default-timeout",
+      "title": "HTTP Client Has 30s Default Timeout",
+      "category": "feature",
+      "severity": "medium",
+      "automatable": false,
+      "description": "HTTP client now has 30-second default timeout (was no timeout)",
+      "detection": {
+        "file_patterns": ["**/*.php"],
+        "regex_patterns": ["Http::"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "manual_review",
+        "description": "Review HTTP calls that may need longer timeout"
+      },
+      "examples": {
+        "before": "Http::get('https://api.example.com'); // No timeout",
+        "after": "Http::timeout(60)->get('https://api.example.com'); // Custom timeout"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/upgrade#http-client-timeout"
+      ],
+      "manual_steps": [
+        "Test long-running HTTP requests",
+        "Add explicit timeouts where needed"
+      ]
+    },
+    {
+      "id": "password-rule-renamed",
+      "title": "Validation Rule 'password' Renamed",
+      "category": "syntax",
+      "severity": "medium",
+      "automatable": true,
+      "description": "Validation rule 'password' renamed to 'current_password'",
+      "detection": {
+        "file_patterns": ["app/**/*.php"],
+        "regex_patterns": ["'password'\\s*=>.*'password'"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "validation_rule_rename",
+        "search": "'password' => 'password'",
+        "replace": "'password' => 'current_password'"
+      },
+      "examples": {
+        "before": "'password' => 'required|password'",
+        "after": "'password' => 'required|current_password'"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/upgrade#the-password-rule"
+      ],
+      "manual_steps": []
+    },
+    {
+      "id": "trusted-proxies-middleware",
+      "title": "TrustProxies Middleware Now in Laravel",
+      "category": "structure",
+      "severity": "low",
+      "automatable": true,
+      "description": "TrustProxies middleware moved from fideloper/proxy to Laravel",
+      "detection": {
+        "file_patterns": ["app/Http/Middleware/TrustProxies.php"],
+        "regex_patterns": ["use Fideloper\\\\Proxy\\\\TrustProxies"],
+        "ast_pattern": null
+      },
+      "transformation": {
+        "type": "import_update",
+        "search": "use Fideloper\\\\Proxy\\\\TrustProxies as Middleware;",
+        "replace": "use Illuminate\\\\Http\\\\Middleware\\\\TrustProxies as Middleware;"
+      },
+      "examples": {
+        "before": "use Fideloper\\Proxy\\TrustProxies as Middleware;",
+        "after": "use Illuminate\\Http\\Middleware\\TrustProxies as Middleware;"
+      },
+      "references": [
+        "https://laravel.com/docs/9.x/upgrade#trusted-proxies"
+      ],
+      "manual_steps": [
+        "Remove fideloper/proxy from composer.json"
+      ]
+    }
+  ],
+  "dependency_changes": {
+    "php_packages": {
+      "add": {
+        "spatie/laravel-ignition": "^1.0"
+      },
+      "update": {
+        "laravel/framework": "^9.0",
+        "laravel/sanctum": "^2.14.1"
+      },
+      "remove": {
+        "facade/ignition": "Remove",
+        "fideloper/proxy": "Remove"
+      }
+    },
+    "dev_packages": {
+      "update": {
+        "nunomaduro/collision": "^6.1"
+      }
+    },
+    "flysystem_drivers": {
+      "league/flysystem-aws-s3-v3": "^3.0",
+      "league/flysystem-ftp": "^3.0",
+      "league/flysystem-sftp-v3": "^3.0"
+    },
+    "symfony_mailer": {
+      "symfony/mailgun-mailer": "Required for Mailgun",
+      "symfony/postmark-mailer": "Required for Postmark",
+      "symfony/http-client": "Required with mail drivers"
+    }
+  },
+  "configuration_changes": [
+    {
+      "file": "config/database.php",
+      "type": "update",
+      "description": "Postgres: schema → search_path",
+      "automatable": true
+    },
+    {
+      "file": "config/filesystems.php",
+      "type": "update",
+      "description": "Add 'throw' => true for exception behavior",
+      "automatable": false
+    },
+    {
+      "file": ".env",
+      "type": "update",
+      "description": "FILESYSTEM_DRIVER → FILESYSTEM_DISK",
+      "automatable": true
+    },
+    {
+      "file": "lang/",
+      "type": "move",
+      "description": "Language files moved from resources/lang to root lang/",
+      "automatable": true
+    }
+  ],
+  "deprecations": []
+}

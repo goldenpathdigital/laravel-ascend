@@ -1,0 +1,4 @@
+* text=auto eol=lf
+
+/composer.lock binary
+*.phar binary

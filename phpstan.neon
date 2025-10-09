@@ -1,0 +1,18 @@
+parameters:
+    level: 8
+    paths:
+        - src
+    excludePaths:
+        # Exclude Laravel integration layer - these rely on Laravel classes
+        # that aren't available during static analysis of standalone package
+        - src/Console/*
+        - src/Facades/*
+        - src/Providers/*
+    tmpDir: build/phpstan
+    ignoreErrors:
+        # Dynamic class instantiation in AscendServer
+        - '#Parameter \#1 \$objectOrClass of class ReflectionClass constructor expects class-string<T of object>\|T of object, string given\.#'
+        # Generic type specification for ReflectionClass in descriptor method
+        - '#Method .+::instantiateDescriptor\(\) has parameter \$reflection with generic class ReflectionClass but does not specify its types#'
+        # Error handler callbacks - PHP allows closures that don't match full signature
+        - '#Parameter \#1 \$callback of function set_error_handler expects \(callable\(int, string, string, int\): bool\)\|null, Closure\(\): void given\.#'

@@ -1,0 +1,139 @@
+{
+  "pattern_id": "anonymous-migration-conversion",
+  "name": "Anonymous Migration Class Conversion (Laravel 9)",
+  "applies_to_versions": ["8-to-9"],
+  "category": "structure",
+  "complexity": "low",
+  "description": "Converts named migration classes to anonymous classes to prevent class name collisions",
+  "detection": {
+    "file_patterns": [
+      "database/migrations/*.php"
+    ],
+    "content_patterns": [
+      "class CreateUsersTable extends Migration",
+      "class Add.*To.* extends Migration"
+    ],
+    "ast_requirements": {
+      "node_type": "Stmt_Class",
+      "extends": "Migration",
+      "anonymous": false
+    }
+  },
+  "transformation": {
+    "type": "class_to_anonymous",
+    "automatable": true,
+    "steps": [
+      {
+        "step": 1,
+        "action": "parse_migration_file",
+        "description": "Parse PHP file with AST parser"
+      },
+      {
+        "step": 2,
+        "action": "extract_class_definition",
+        "description": "Extract the class name and body"
+      },
+      {
+        "step": 3,
+        "action": "preserve_use_statements",
+        "description": "Keep all use statements from top of file"
+      },
+      {
+        "step": 4,
+        "action": "remove_class_name",
+        "description": "Remove the named class declaration"
+      },
+      {
+        "step": 5,
+        "action": "wrap_in_return",
+        "description": "Wrap in 'return new class extends Migration'"
+      },
+      {
+        "step": 6,
+        "action": "add_semicolon",
+        "description": "Add semicolon after closing brace"
+      }
+    ],
+    "ast_transformation": {
+      "from": "Stmt_Class(name='ClassName', extends='Migration', stmts=[...])",
+      "to": "Stmt_Return(expr=Expr_New(class=Stmt_Class(name=null, extends='Migration', stmts=[...])))"
+    }
+  },
+  "examples": {
+    "create_table": {
+      "before": "<?php\n\nuse Illuminate\\Database\\Migrations\\Migration;\nuse Illuminate\\Database\\Schema\\Blueprint;\nuse Illuminate\\Support\\Facades\\Schema;\n\nclass CreateUsersTable extends Migration\n{\n    public function up()\n    {\n        Schema::create('users', function (Blueprint $table) {\n            $table->id();\n            $table->timestamps();\n        });\n    }\n\n    public function down()\n    {\n        Schema::dropIfExists('users');\n    }\n}",
+      "after": "<?php\n\nuse Illuminate\\Database\\Migrations\\Migration;\nuse Illuminate\\Database\\Schema\\Blueprint;\nuse Illuminate\\Support\\Facades\\Schema;\n\nreturn new class extends Migration\n{\n    public function up()\n    {\n        Schema::create('users', function (Blueprint $table) {\n            $table->id();\n            $table->timestamps();\n        });\n    }\n\n    public function down()\n    {\n        Schema::dropIfExists('users');\n    }\n};"
+    },
+    "add_column": {
+      "before": "<?php\n\nuse Illuminate\\Database\\Migrations\\Migration;\n\nclass AddStatusToOrdersTable extends Migration\n{\n    public function up()\n    {\n        // ...\n    }\n\n    public function down()\n    {\n        // ...\n    }\n}",
+      "after": "<?php\n\nuse Illuminate\\Database\\Migrations\\Migration;\n\nreturn new class extends Migration\n{\n    public function up()\n    {\n        // ...\n    }\n\n    public function down()\n    {\n        // ...\n    }\n};"
+    },
+    "with_model_import": {
+      "before": "<?php\n\nuse Illuminate\\Database\\Migrations\\Migration;\nuse App\\Models\\User;\n\nclass SeedDefaultUsers extends Migration\n{\n    public function up()\n    {\n        User::create(['name' => 'Admin']);\n    }\n\n    public function down()\n    {\n        //\n    }\n}",
+      "after": "<?php\n\nuse Illuminate\\Database\\Migrations\\Migration;\nuse App\\Models\\User;\n\nreturn new class extends Migration\n{\n    public function up()\n    {\n        User::create(['name' => 'Admin']);\n    }\n\n    public function down()\n    {\n        //\n    }\n};"
+    }
+  },
+  "validation": {
+    "checks": [
+      {
+        "type": "syntax_valid",
+        "error_message": "Converted migration must have valid PHP syntax"
+      },
+      {
+        "type": "contains_return_statement",
+        "error_message": "Migration must start with 'return new class'"
+      },
+      {
+        "type": "extends_migration",
+        "error_message": "Anonymous class must extend Migration"
+      },
+      {
+        "type": "has_up_and_down",
+        "error_message": "Migration must have up() and down() methods"
+      },
+      {
+        "type": "ends_with_semicolon",
+        "error_message": "File must end with semicolon after closing brace"
+      }
+    ]
+  },
+  "edge_cases": [
+    {
+      "case": "Migration with traits",
+      "detection": "use \\w+Trait;",
+      "solution": "Preserve trait use statements inside class body",
+      "example": "return new class extends Migration\n{\n    use SomeTrait;\n}"
+    },
+    {
+      "case": "Migration with constants",
+      "detection": "const \\w+ =",
+      "solution": "Preserve constants inside class",
+      "example": "return new class extends Migration\n{\n    const TABLE_NAME = 'users';\n}"
+    },
+    {
+      "case": "Migration with constructor",
+      "detection": "public function __construct",
+      "solution": "Keep constructor in anonymous class",
+      "note": "Rare but valid"
+    }
+  ],
+  "php_parser_example": {
+    "description": "Using nikic/php-parser to transform",
+    "code": "use PhpParser\\NodeTraverser;\nuse PhpParser\\NodeVisitorAbstract;\n\nclass AnonymousMigrationVisitor extends NodeVisitorAbstract\n{\n    public function leaveNode($node) {\n        if ($node instanceof Class_\n            && $node->extends\n            && $node->extends->toString() === 'Migration'\n            && $node->name !== null\n        ) {\n            // Remove class name\n            $node->name = null;\n            \n            // Wrap in return statement\n            return new Return_(new New_($node));\n        }\n    }\n}"
+  },
+  "benefits": [
+    "Prevents migration class name collisions",
+    "Enables easier migration merging in teams",
+    "Aligns with Laravel 9+ best practices",
+    "No functional change, just structure"
+  ],
+  "migration_notes": [
+    "Existing migrations don't need conversion (optional)",
+    "New migrations generated with php artisan make:migration are anonymous by default in Laravel 9+",
+    "Converting existing migrations is optional but recommended for consistency"
+  ],
+  "references": [
+    "https://laravel.com/docs/9.x/upgrade#anonymous-stub-migrations",
+    "https://laravel.com/docs/9.x/migrations#generating-migrations"
+  ]
+}

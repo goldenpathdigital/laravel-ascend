@@ -1,0 +1,138 @@
+{
+  "pattern_id": "seeder-namespace-migration",
+  "name": "Seeder Namespace Migration (Laravel 8)",
+  "applies_to_versions": ["7-to-8"],
+  "category": "structure",
+  "complexity": "medium",
+  "description": "Migrates seeders from database/seeds to database/seeders with Database\\Seeders namespace",
+  "detection": {
+    "file_patterns": [
+      "database/seeds/*.php"
+    ],
+    "content_patterns": [
+      "extends Seeder",
+      "class DatabaseSeeder"
+    ],
+    "ast_requirements": {
+      "has_class": true,
+      "extends": "Seeder",
+      "missing_namespace": true
+    }
+  },
+  "transformation": {
+    "type": "namespace_addition_and_move",
+    "automatable": true,
+    "steps": [
+      {
+        "step": 1,
+        "action": "detect_seeder_files",
+        "description": "Find all seeder files in database/seeds/"
+      },
+      {
+        "step": 2,
+        "action": "add_namespace",
+        "description": "Add 'namespace Database\\Seeders;' after opening PHP tag"
+      },
+      {
+        "step": 3,
+        "action": "add_use_statements",
+        "description": "Add 'use Illuminate\\Database\\Seeder;' and other needed imports"
+      },
+      {
+        "step": 4,
+        "action": "create_target_directory",
+        "description": "Create database/seeders/ directory if not exists"
+      },
+      {
+        "step": 5,
+        "action": "move_files",
+        "description": "Move files from database/seeds/ to database/seeders/"
+      },
+      {
+        "step": 6,
+        "action": "update_composer_autoload",
+        "description": "Update composer.json autoload section"
+      },
+      {
+        "step": 7,
+        "action": "update_seeder_calls",
+        "description": "Update $this->call() references in other seeders"
+      }
+    ],
+    "composer_autoload_changes": {
+      "remove": {
+        "classmap": ["database/seeds"]
+      },
+      "add": {
+        "psr-4": {
+          "Database\\Seeders\\": "database/seeders/"
+        }
+      }
+    }
+  },
+  "examples": {
+    "basic_seeder": {
+      "before": "<?php\n\nuse Illuminate\\Database\\Seeder;\n\nclass DatabaseSeeder extends Seeder\n{\n    public function run()\n    {\n        $this->call(UserSeeder::class);\n    }\n}",
+      "after": "<?php\n\nnamespace Database\\Seeders;\n\nuse Illuminate\\Database\\Seeder;\n\nclass DatabaseSeeder extends Seeder\n{\n    public function run()\n    {\n        $this->call(UserSeeder::class);\n    }\n}"
+    },
+    "seeder_with_model_import": {
+      "before": "<?php\n\nuse Illuminate\\Database\\Seeder;\nuse App\\User;\n\nclass UserSeeder extends Seeder\n{\n    public function run()\n    {\n        User::create(['name' => 'Admin']);\n    }\n}",
+      "after": "<?php\n\nnamespace Database\\Seeders;\n\nuse Illuminate\\Database\\Seeder;\nuse App\\Models\\User;\n\nclass UserSeeder extends Seeder\n{\n    public function run()\n    {\n        User::create(['name' => 'Admin']);\n    }\n}"
+    },
+    "composer_json_before": "{\n  \"autoload\": {\n    \"classmap\": [\n      \"database/seeds\",\n      \"database/factories\"\n    ]\n  }\n}",
+    "composer_json_after": "{\n  \"autoload\": {\n    \"psr-4\": {\n      \"App\\\\\": \"app/\",\n      \"Database\\\\Factories\\\\\": \"database/factories/\",\n      \"Database\\\\Seeders\\\\\": \"database/seeders/\"\n    }\n  }\n}"
+  },
+  "validation": {
+    "checks": [
+      {
+        "type": "directory_exists",
+        "path": "database/seeders/",
+        "error_message": "database/seeders/ directory must exist"
+      },
+      {
+        "type": "files_have_namespace",
+        "namespace": "Database\\Seeders",
+        "error_message": "Seeder files must have Database\\Seeders namespace"
+      },
+      {
+        "type": "composer_autoload_updated",
+        "error_message": "composer.json must include Database\\Seeders PSR-4 autoload"
+      },
+      {
+        "type": "old_directory_empty",
+        "path": "database/seeds/",
+        "error_message": "database/seeds/ should be empty after migration"
+      }
+    ]
+  },
+  "edge_cases": [
+    {
+      "case": "Seeder with factory calls",
+      "detection": "factory(",
+      "solution": "Ensure factory namespace is also updated (Database\\Factories)"
+    },
+    {
+      "case": "Seeder calling model directly",
+      "detection": "App\\\\User",
+      "solution": "Update to App\\Models\\User if models moved to Models directory"
+    },
+    {
+      "case": "Nested seeder calls",
+      "detection": "$this->call([",
+      "solution": "All seeder class references remain same, just need namespace"
+    }
+  ],
+  "post_migration_commands": [
+    "composer dump-autoload",
+    "php artisan db:seed --class=Database\\Seeders\\DatabaseSeeder"
+  ],
+  "rollback_instructions": [
+    "Move files back from database/seeders/ to database/seeds/",
+    "Remove namespace Database\\Seeders;",
+    "Restore composer.json classmap",
+    "Run composer dump-autoload"
+  ],
+  "references": [
+    "https://laravel.com/docs/8.x/upgrade#seeding-and-factory-namespaces"
+  ]
+}

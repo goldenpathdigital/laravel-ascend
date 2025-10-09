@@ -1,0 +1,260 @@
+{
+  "pattern_id": "route-syntax-update",
+  "name": "Route String Syntax to Action Array (Laravel 8)",
+  "applies_to_versions": ["7-to-8"],
+  "category": "syntax",
+  "complexity": "medium",
+  "description": "Converts string-based route controller syntax to action array syntax due to RouteServiceProvider namespace removal",
+  "detection": {
+    "file_patterns": [
+      "routes/**/*.php"
+    ],
+    "content_patterns": [
+      "Route::get(",
+      "Route::post(",
+      "@index",
+      "@store"
+    ],
+    "ast_requirements": {
+      "node_type": "Expr_StaticCall",
+      "class": "Route",
+      "method": ["get", "post", "put", "patch", "delete", "any", "match"],
+      "string_controller_syntax": true
+    },
+    "regex_patterns": [
+      "Route::(get|post|put|patch|delete|any|match)\\([^,]+,\\s*['\"][^'\"]+@[^'\"]+['\"]"
+    ]
+  },
+  "transformation": {
+    "type": "route_controller_syntax_conversion",
+    "automatable": true,
+    "alternatives": [
+      {
+        "name": "action_array_syntax",
+        "description": "Convert to [ControllerClass::class, 'method'] syntax",
+        "recommended": true
+      },
+      {
+        "name": "restore_namespace",
+        "description": "Add $namespace back to RouteServiceProvider",
+        "recommended": false,
+        "note": "Not future-proof"
+      }
+    ],
+    "steps": [
+      {
+        "step": 1,
+        "action": "parse_route_definition",
+        "description": "Extract controller string and method from route"
+      },
+      {
+        "step": 2,
+        "action": "resolve_controller_class",
+        "description": "Determine full controller class name"
+      },
+      {
+        "step": 3,
+        "action": "add_use_statement",
+        "description": "Add use statement for controller at top of file"
+      },
+      {
+        "step": 4,
+        "action": "convert_to_array_syntax",
+        "description": "Replace string with [ControllerClass::class, 'method']"
+      },
+      {
+        "step": 5,
+        "action": "organize_imports",
+        "description": "Group and sort use statements"
+      }
+    ],
+    "controller_resolution": {
+      "default_namespace": "App\\Http\\Controllers",
+      "check_file_exists": true,
+      "subdirectory_support": true
+    }
+  },
+  "examples": {
+    "basic_conversion": {
+      "before": "<?php\n// routes/web.php\n\nRoute::get('/users', 'UserController@index');",
+      "after": "<?php\n// routes/web.php\n\nuse App\\Http\\Controllers\\UserController;\n\nRoute::get('/users', [UserController::class, 'index']);"
+    },
+    "multiple_routes": {
+      "before": "<?php\n// routes/web.php\n\nRoute::get('/users', 'UserController@index');\nRoute::post('/users', 'UserController@store');\nRoute::get('/posts', 'PostController@index');",
+      "after": "<?php\n// routes/web.php\n\nuse App\\Http\\Controllers\\UserController;\nuse App\\Http\\Controllers\\PostController;\n\nRoute::get('/users', [UserController::class, 'index']);\nRoute::post('/users', [UserController::class, 'store']);\nRoute::get('/posts', [PostController::class, 'index']);"
+    },
+    "subdirectory_controller": {
+      "before": "<?php\n// routes/api.php\n\nRoute::get('/admin/users', 'Admin\\UserController@index');",
+      "after": "<?php\n// routes/api.php\n\nuse App\\Http\\Controllers\\Admin\\UserController;\n\nRoute::get('/admin/users', [UserController::class, 'index']);"
+    },
+    "route_group": {
+      "before": "<?php\n\nRoute::prefix('admin')->group(function () {\n    Route::get('/users', 'Admin\\UserController@index');\n    Route::get('/posts', 'Admin\\PostController@index');\n});",
+      "after": "<?php\n\nuse App\\Http\\Controllers\\Admin\\UserController;\nuse App\\Http\\Controllers\\Admin\\PostController;\n\nRoute::prefix('admin')->group(function () {\n    Route::get('/users', [UserController::class, 'index']);\n    Route::get('/posts', [PostController::class, 'index']);\n});"
+    },
+    "resource_route": {
+      "before": "Route::resource('posts', 'PostController');",
+      "after": "use App\\Http\\Controllers\\PostController;\n\nRoute::resource('posts', PostController::class);"
+    },
+    "invokable_controller": {
+      "before": "Route::get('/dashboard', 'DashboardController');",
+      "after": "use App\\Http\\Controllers\\DashboardController;\n\nRoute::get('/dashboard', DashboardController::class);"
+    }
+  },
+  "validation": {
+    "checks": [
+      {
+        "type": "no_string_syntax",
+        "error_message": "No routes should use string controller syntax"
+      },
+      {
+        "type": "controller_classes_exist",
+        "error_message": "All controller classes must exist"
+      },
+      {
+        "type": "use_statements_added",
+        "error_message": "All controllers must have use statements"
+      },
+      {
+        "type": "syntax_valid",
+        "error_message": "Route files must have valid PHP syntax"
+      },
+      {
+        "type": "no_duplicate_imports",
+        "error_message": "No duplicate use statements"
+      }
+    ]
+  },
+  "edge_cases": [
+    {
+      "case": "Controller in non-standard namespace",
+      "detection": "Controller not in App\\Http\\Controllers",
+      "solution": "Use full namespace path in use statement",
+      "example": "use Custom\\Namespace\\MyController;"
+    },
+    {
+      "case": "Closure routes",
+      "detection": "function () { }",
+      "solution": "No change needed, closures don't use controllers",
+      "example": "Route::get('/', function() { return view('welcome'); });"
+    },
+    {
+      "case": "Route::redirect()",
+      "detection": "Route::redirect(",
+      "solution": "No change needed, redirect doesn't use controllers"
+    },
+    {
+      "case": "Route::view()",
+      "detection": "Route::view(",
+      "solution": "No change needed, view doesn't use controllers"
+    },
+    {
+      "case": "Already using action array",
+      "detection": "[*Controller::class,",
+      "solution": "Skip, already updated"
+    },
+    {
+      "case": "API resource routes",
+      "detection": "Route::apiResource(",
+      "solution": "Convert controller string to ::class syntax",
+      "example": "Route::apiResource('posts', PostController::class);"
+    },
+    {
+      "case": "Namespaced routes in groups",
+      "detection": "Route::namespace()->group(",
+      "solution": "Remove namespace(), convert routes to action arrays",
+      "note": "namespace() method deprecated in Laravel 8"
+    }
+  ],
+  "controller_detection": {
+    "patterns": [
+      {
+        "pattern": "'ControllerName@method'",
+        "namespace": "App\\Http\\Controllers",
+        "type": "standard"
+      },
+      {
+        "pattern": "'Subdir\\ControllerName@method'",
+        "namespace": "App\\Http\\Controllers\\Subdir",
+        "type": "subdirectory"
+      },
+      {
+        "pattern": "'ControllerName'",
+        "namespace": "App\\Http\\Controllers",
+        "type": "invokable",
+        "note": "No @ symbol means __invoke method"
+      }
+    ]
+  },
+  "import_organization": {
+    "order": [
+      "Illuminate framework classes",
+      "Third-party packages",
+      "App namespace classes"
+    ],
+    "grouping": "By namespace hierarchy",
+    "alphabetical": true
+  },
+  "alternative_approach": {
+    "name": "Restore RouteServiceProvider namespace",
+    "description": "Keep string syntax by adding $namespace back",
+    "steps": [
+      "Open app/Providers/RouteServiceProvider.php",
+      "Add: protected $namespace = 'App\\\\Http\\\\Controllers';",
+      "Keep all routes using string syntax"
+    ],
+    "pros": [
+      "No route file changes needed",
+      "Quick migration"
+    ],
+    "cons": [
+      "Not future-proof",
+      "Laravel 9+ may fully remove support",
+      "Less explicit about controller location"
+    ],
+    "recommendation": "Use action array syntax for long-term maintainability"
+  },
+  "automation_approach": {
+    "regex_method": {
+      "find": "Route::(get|post|put|patch|delete|any|match)\\(([^,]+),\\s*['\"]([^'\"@]+)@([^'\"]+)['\"]",
+      "extract": {
+        "method": "$1",
+        "path": "$2",
+        "controller": "$3",
+        "action": "$4"
+      },
+      "replace": "Route::$1($2, [App\\\\Http\\\\Controllers\\\\$3::class, '$4'])"
+    },
+    "ast_method": {
+      "detect": "Expr_StaticCall with scalar string arg containing @",
+      "extract": "Controller and method from string",
+      "transform": "Create array with ClassConstFetch and scalar string"
+    }
+  },
+  "testing_checklist": [
+    "All routes resolve correctly",
+    "Middleware still applies",
+    "Route model binding works",
+    "Named routes work",
+    "Route::resource works",
+    "API routes work",
+    "Authentication routes work"
+  ],
+  "common_routes_to_check": [
+    "Auth routes (if using Laravel UI/Breeze/Jetstream)",
+    "Password reset routes",
+    "Email verification routes",
+    "API authentication routes (Sanctum/Passport)",
+    "Admin panel routes"
+  ],
+  "migration_notes": [
+    "Can be done incrementally (one route file at a time)",
+    "Test thoroughly after each file conversion",
+    "Update any custom route macros or bindings",
+    "Check that IDE autocomplete still works",
+    "Ensure route caching still works (php artisan route:cache)"
+  ],
+  "references": [
+    "https://laravel.com/docs/8.x/upgrade#routing",
+    "https://laravel.com/docs/8.x/routing#basic-routing"
+  ]
+}

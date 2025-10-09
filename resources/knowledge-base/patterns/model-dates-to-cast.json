@@ -1,0 +1,176 @@
+{
+  "pattern_id": "model-dates-to-casts",
+  "name": "Model $dates to $casts Migration (Laravel 10)",
+  "applies_to_versions": ["9-to-10"],
+  "category": "syntax",
+  "complexity": "low",
+  "description": "Converts Model $dates property to $casts with 'datetime' type as $dates is removed in Laravel 10",
+  "detection": {
+    "file_patterns": [
+      "app/Models/**/*.php",
+      "app/*.php"
+    ],
+    "content_patterns": [
+      "protected $dates",
+      "extends Model"
+    ],
+    "ast_requirements": {
+      "node_type": "Stmt_Property",
+      "name": "dates",
+      "in_class_extending": "Model"
+    }
+  },
+  "transformation": {
+    "type": "property_migration",
+    "automatable": true,
+    "steps": [
+      {
+        "step": 1,
+        "action": "find_dates_property",
+        "description": "Locate protected $dates array in model"
+      },
+      {
+        "step": 2,
+        "action": "extract_field_names",
+        "description": "Extract all field names from $dates array"
+      },
+      {
+        "step": 3,
+        "action": "check_existing_casts",
+        "description": "Check if $casts property already exists"
+      },
+      {
+        "step": 4,
+        "action": "merge_or_create_casts",
+        "description": "Add date fields to $casts with 'datetime' type"
+      },
+      {
+        "step": 5,
+        "action": "remove_dates_property",
+        "description": "Remove the $dates property completely"
+      },
+      {
+        "step": 6,
+        "action": "preserve_formatting",
+        "description": "Maintain code style and indentation"
+      }
+    ],
+    "cast_type_mapping": {
+      "date_field": "datetime",
+      "alternative": "immutable_datetime"
+    }
+  },
+  "examples": {
+    "simple_conversion": {
+      "before": "<?php\n\nnamespace App\\Models;\n\nuse Illuminate\\Database\\Eloquent\\Model;\n\nclass Order extends Model\n{\n    protected $dates = [\n        'deployed_at',\n        'expired_at',\n    ];\n}",
+      "after": "<?php\n\nnamespace App\\Models;\n\nuse Illuminate\\Database\\Eloquent\\Model;\n\nclass Order extends Model\n{\n    protected $casts = [\n        'deployed_at' => 'datetime',\n        'expired_at' => 'datetime',\n    ];\n}"
+    },
+    "merge_with_existing_casts": {
+      "before": "<?php\n\nclass Product extends Model\n{\n    protected $casts = [\n        'is_active' => 'boolean',\n    ];\n\n    protected $dates = [\n        'published_at',\n    ];\n}",
+      "after": "<?php\n\nclass Product extends Model\n{\n    protected $casts = [\n        'is_active' => 'boolean',\n        'published_at' => 'datetime',\n    ];\n}"
+    },
+    "empty_dates_array": {
+      "before": "<?php\n\nclass User extends Model\n{\n    protected $dates = [];\n}",
+      "after": "<?php\n\nclass User extends Model\n{\n    // $dates property removed (was empty)\n}"
+    },
+    "with_timestamps": {
+      "before": "<?php\n\nclass Post extends Model\n{\n    protected $dates = [\n        'published_at',\n        'featured_at',\n    ];\n}",
+      "after": "<?php\n\nclass Post extends Model\n{\n    protected $casts = [\n        'published_at' => 'datetime',\n        'featured_at' => 'datetime',\n    ];\n    \n    // Note: created_at and updated_at are auto-cast, don't need to add\n}"
+    },
+    "immutable_datetime": {
+      "before": "<?php\n\nclass Event extends Model\n{\n    protected $dates = [\n        'start_date',\n        'end_date',\n    ];\n}",
+      "after": "<?php\n\nclass Event extends Model\n{\n    protected $casts = [\n        'start_date' => 'immutable_datetime',  // or 'datetime'\n        'end_date' => 'immutable_datetime',\n    ];\n}"
+    }
+  },
+  "validation": {
+    "checks": [
+      {
+        "type": "dates_property_removed",
+        "error_message": "Model must not have $dates property"
+      },
+      {
+        "type": "casts_includes_date_fields",
+        "error_message": "All date fields must be in $casts"
+      },
+      {
+        "type": "no_duplicate_casts",
+        "error_message": "Field should not appear twice in $casts"
+      },
+      {
+        "type": "valid_cast_types",
+        "allowed": ["datetime", "immutable_datetime", "date", "immutable_date"],
+        "error_message": "Date fields should use datetime-related cast types"
+      }
+    ]
+  },
+  "edge_cases": [
+    {
+      "case": "Model with method casts()",
+      "detection": "protected function casts()",
+      "solution": "Add to method return array instead of property",
+      "example": "protected function casts(): array\n{\n    return [\n        'is_active' => 'boolean',\n        'published_at' => 'datetime',  // Add here\n    ];\n}"
+    },
+    {
+      "case": "Field already in $casts with different type",
+      "detection": "Field exists in both $dates and $casts",
+      "solution": "Keep existing $casts type, remove from $dates",
+      "note": "$casts takes precedence"
+    },
+    {
+      "case": "created_at/updated_at in $dates",
+      "detection": "created_at or updated_at in $dates array",
+      "solution": "Don't add to $casts (auto-handled by Laravel)",
+      "note": "Timestamps are automatically cast to datetime"
+    },
+    {
+      "case": "Soft delete deleted_at",
+      "detection": "deleted_at in $dates array",
+      "solution": "Don't add to $casts (auto-handled by SoftDeletes trait)",
+      "note": "SoftDeletes trait handles deleted_at casting"
+    }
+  ],
+  "cast_type_guide": {
+    "datetime": {
+      "description": "Returns Carbon instance (mutable)",
+      "use_when": "Default choice for date/datetime fields"
+    },
+    "immutable_datetime": {
+      "description": "Returns CarbonImmutable instance",
+      "use_when": "Want immutable date objects (safer for calculations)"
+    },
+    "date": {
+      "description": "Returns Carbon with time set to 00:00:00",
+      "use_when": "Field stores only date (no time)"
+    },
+    "immutable_date": {
+      "description": "Returns CarbonImmutable with time set to 00:00:00",
+      "use_when": "Immutable date-only field"
+    }
+  },
+  "php_parser_transformation": {
+    "description": "AST-based transformation approach",
+    "pseudocode": "1. Find Property node with name='dates'\n2. Extract array items as field names\n3. Find or create Property node with name='casts'\n4. Add field => 'datetime' for each date field\n5. Remove dates Property node\n6. Regenerate code with pretty printer"
+  },
+  "automated_field_exclusions": [
+    "created_at",
+    "updated_at",
+    "deleted_at",
+    "email_verified_at"
+  ],
+  "migration_notes": [
+    "This is a REQUIRED change for Laravel 10 (not optional)",
+    "$dates property is completely removed and will cause errors",
+    "All existing date fields must be migrated to $casts",
+    "Laravel's auto-casting for timestamps remains unchanged"
+  ],
+  "testing_checklist": [
+    "Verify date fields still return Carbon instances",
+    "Check date formatting in API responses",
+    "Test date comparisons and calculations",
+    "Ensure date mutation still works correctly"
+  ],
+  "references": [
+    "https://laravel.com/docs/10.x/upgrade#the-dates-property",
+    "https://laravel.com/docs/10.x/eloquent-mutators#attribute-casting"
+  ]
+}

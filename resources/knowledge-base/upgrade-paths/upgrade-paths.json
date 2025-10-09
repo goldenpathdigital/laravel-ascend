@@ -1,0 +1,437 @@
+{
+  "upgrade_paths": {
+    "6-to-7": {
+      "from": "6.x",
+      "to": "7.0",
+      "difficulty": "low",
+      "estimated_time_minutes": 15,
+      "breaking_changes_file": "data/breaking-changes/laravel-7.json",
+      "required_patterns": [],
+      "optional_patterns": [],
+      "sequence": [
+        {
+          "step": 1,
+          "action": "update_composer_php_version",
+          "required": true,
+          "automatable": true,
+          "description": "Update PHP version constraint to ^7.2.5"
+        },
+        {
+          "step": 2,
+          "action": "update_composer_dependencies",
+          "required": true,
+          "automatable": true,
+          "description": "Update Laravel and first-party packages"
+        },
+        {
+          "step": 3,
+          "action": "apply_breaking_changes",
+          "required": true,
+          "automatable": "partial",
+          "breaking_change_ids": [
+            "symfony-5-method-signatures",
+            "artisan-command-return-types",
+            "blade-component-method-renamed",
+            "eloquent-add-hidden-visible-removed",
+            "url-routable-field-parameter",
+            "resource-class-removed",
+            "session-secure-cookie-config"
+          ]
+        },
+        {
+          "step": 4,
+          "action": "update_configuration",
+          "required": true,
+          "automatable": false,
+          "configs": ["mail", "cors"]
+        },
+        {
+          "step": 5,
+          "action": "run_tests",
+          "required": true,
+          "automatable": false,
+          "description": "Run full test suite to verify functionality"
+        }
+      ],
+      "pre_upgrade_checks": [
+        "php_version_compatible",
+        "composer_lock_exists",
+        "git_working_tree_clean"
+      ],
+      "post_upgrade_validations": [
+        "composer_install_successful",
+        "application_key_exists",
+        "all_configs_valid",
+        "test_suite_passes"
+      ]
+    },
+    "7-to-8": {
+      "from": "7.x",
+      "to": "8.0",
+      "difficulty": "high",
+      "estimated_time_minutes": 60,
+      "breaking_changes_file": "data/breaking-changes/laravel-8.json",
+      "required_patterns": [
+        "factory-class-rewrite",
+        "seeder-namespace-migration"
+      ],
+      "optional_patterns": [
+        "models-directory-migration"
+      ],
+      "sequence": [
+        {
+          "step": 1,
+          "action": "decision_point",
+          "required": true,
+          "automatable": false,
+          "description": "Choose factory migration strategy",
+          "options": [
+            {
+              "choice": "use_legacy_factories",
+              "description": "Install laravel/legacy-factories to keep old syntax",
+              "recommended_for": "Large projects, gradual migration"
+            },
+            {
+              "choice": "rewrite_factories",
+              "description": "Convert all factories to class-based",
+              "recommended_for": "Smaller projects, clean upgrade"
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "action": "update_composer_php_version",
+          "required": true,
+          "automatable": true,
+          "description": "Update PHP version constraint to ^7.3"
+        },
+        {
+          "step": 3,
+          "action": "update_composer_dependencies",
+          "required": true,
+          "automatable": true,
+          "description": "Update Laravel and all packages"
+        },
+        {
+          "step": 4,
+          "action": "migrate_seeders_namespace",
+          "required": true,
+          "automatable": true,
+          "pattern": "seeder-namespace-migration"
+        },
+        {
+          "step": 5,
+          "action": "migrate_models_directory",
+          "required": false,
+          "automatable": true,
+          "pattern": "models-directory-migration",
+          "description": "Optionally move models to app/Models/"
+        },
+        {
+          "step": 6,
+          "action": "migrate_factories",
+          "required": true,
+          "automatable": false,
+          "pattern": "factory-class-rewrite",
+          "conditional": "choice !== 'use_legacy_factories'"
+        },
+        {
+          "step": 7,
+          "action": "apply_breaking_changes",
+          "required": true,
+          "automatable": "partial",
+          "breaking_change_ids": [
+            "php-version-requirement",
+            "queue-retry-after-rename",
+            "queue-timeout-at-rename",
+            "queue-chain-methods-removal",
+            "pagination-defaults-tailwind",
+            "routing-namespace-prefix",
+            "maintenance-mode-updates"
+          ]
+        },
+        {
+          "step": 8,
+          "action": "run_tests",
+          "required": true,
+          "automatable": false,
+          "description": "Run test suite with new factories"
+        }
+      ],
+      "pre_upgrade_checks": [
+        "php_version_compatible",
+        "factories_detected",
+        "seeders_detected"
+      ],
+      "post_upgrade_validations": [
+        "seeders_have_namespace",
+        "factories_working",
+        "test_suite_passes"
+      ]
+    },
+    "8-to-9": {
+      "from": "8.x",
+      "to": "9.0",
+      "difficulty": "high",
+      "estimated_time_minutes": 90,
+      "breaking_changes_file": "data/breaking-changes/laravel-9.json",
+      "required_patterns": [
+        "anonymous-migration-conversion",
+        "swiftmailer-to-symfony-mailer"
+      ],
+      "optional_patterns": [
+        "accessor-mutator-attribute-syntax"
+      ],
+      "sequence": [
+        {
+          "step": 1,
+          "action": "update_composer_php_version",
+          "required": true,
+          "automatable": true,
+          "description": "Update PHP version constraint to ^8.0.2"
+        },
+        {
+          "step": 2,
+          "action": "update_composer_dependencies",
+          "required": true,
+          "automatable": true,
+          "description": "Update Laravel, Flysystem 3, Symfony Mailer"
+        },
+        {
+          "step": 3,
+          "action": "convert_migrations_anonymous",
+          "required": false,
+          "automatable": true,
+          "pattern": "anonymous-migration-conversion",
+          "description": "Convert migrations to anonymous classes"
+        },
+        {
+          "step": 4,
+          "action": "update_mailer_methods",
+          "required": true,
+          "automatable": "partial",
+          "pattern": "swiftmailer-to-symfony-mailer"
+        },
+        {
+          "step": 5,
+          "action": "apply_breaking_changes",
+          "required": true,
+          "automatable": "partial",
+          "breaking_change_ids": [
+            "php-version-requirement",
+            "flysystem-3-upgrade",
+            "symfony-mailer-transition",
+            "php-return-types",
+            "postgres-schema-configuration",
+            "password-rule-renamed"
+          ]
+        },
+        {
+          "step": 6,
+          "action": "review_storage_usage",
+          "required": true,
+          "automatable": false,
+          "description": "Review all Storage:: calls for Flysystem 3 behavior"
+        },
+        {
+          "step": 7,
+          "action": "run_tests",
+          "required": true,
+          "automatable": false
+        }
+      ],
+      "critical_warnings": [
+        "Flysystem 3 changes file write behavior - review storage operations",
+        "SwiftMailer → Symfony Mailer requires mail code review",
+        "PHP 8.0+ required - ensure server compatibility"
+      ]
+    },
+    "9-to-10": {
+      "from": "9.x",
+      "to": "10.0",
+      "difficulty": "medium",
+      "estimated_time_minutes": 30,
+      "breaking_changes_file": "data/breaking-changes/laravel-10.json",
+      "required_patterns": [
+        "model-dates-to-casts"
+      ],
+      "optional_patterns": [],
+      "sequence": [
+        {
+          "step": 1,
+          "action": "update_composer_php_version",
+          "required": true,
+          "automatable": true,
+          "description": "Update PHP version constraint to ^8.1"
+        },
+        {
+          "step": 2,
+          "action": "convert_dates_to_casts",
+          "required": true,
+          "automatable": true,
+          "pattern": "model-dates-to-casts"
+        },
+        {
+          "step": 3,
+          "action": "update_composer_dependencies",
+          "required": true,
+          "automatable": true
+        },
+        {
+          "step": 4,
+          "action": "apply_breaking_changes",
+          "required": true,
+          "automatable": "partial",
+          "breaking_change_ids": [
+            "model-dates-property-removed",
+            "database-expression-getvalue",
+            "bus-dispatch-now-removed",
+            "redirect-home-removed"
+          ]
+        },
+        {
+          "step": 5,
+          "action": "run_tests",
+          "required": true,
+          "automatable": false
+        }
+      ]
+    },
+    "10-to-11": {
+      "from": "10.x",
+      "to": "11.0",
+      "difficulty": "medium",
+      "estimated_time_minutes": 45,
+      "breaking_changes_file": "data/breaking-changes/laravel-11.json",
+      "required_patterns": [],
+      "optional_patterns": [
+        "application-structure-migration"
+      ],
+      "sequence": [
+        {
+          "step": 1,
+          "action": "decision_point",
+          "required": true,
+          "automatable": false,
+          "description": "Choose application structure",
+          "options": [
+            {
+              "choice": "keep_laravel_10_structure",
+              "description": "Keep existing structure (RECOMMENDED)",
+              "recommended_for": "All existing applications"
+            },
+            {
+              "choice": "migrate_to_laravel_11_structure",
+              "description": "Migrate to new slimmed structure",
+              "recommended_for": "New applications only"
+            }
+          ]
+        },
+        {
+          "step": 2,
+          "action": "update_composer_php_version",
+          "required": true,
+          "automatable": true,
+          "description": "Update PHP version constraint to ^8.2"
+        },
+        {
+          "step": 3,
+          "action": "update_composer_dependencies",
+          "required": true,
+          "automatable": true
+        },
+        {
+          "step": 4,
+          "action": "review_column_modifications",
+          "required": true,
+          "automatable": false,
+          "description": "Review all ->change() calls in migrations"
+        },
+        {
+          "step": 5,
+          "action": "apply_breaking_changes",
+          "required": true,
+          "automatable": "partial",
+          "breaking_change_ids": [
+            "column-modification-modifiers",
+            "floating-point-column-types",
+            "rate-limiting-per-second",
+            "doctrine-dbal-removal"
+          ]
+        },
+        {
+          "step": 6,
+          "action": "run_tests",
+          "required": true,
+          "automatable": false
+        }
+      ],
+      "critical_warnings": [
+        "Do NOT migrate application structure for existing apps",
+        "Column modification behavior changed - review migrations carefully"
+      ]
+    },
+    "11-to-12": {
+      "from": "11.x",
+      "to": "12.0",
+      "difficulty": "low",
+      "estimated_time_minutes": 10,
+      "breaking_changes_file": "data/breaking-changes/laravel-12.json",
+      "required_patterns": [],
+      "optional_patterns": [],
+      "sequence": [
+        {
+          "step": 1,
+          "action": "update_composer_dependencies",
+          "required": true,
+          "automatable": true,
+          "description": "Update Laravel to ^12.0 (Carbon 3 auto-updates)"
+        },
+        {
+          "step": 2,
+          "action": "apply_breaking_changes",
+          "required": true,
+          "automatable": "partial",
+          "breaking_change_ids": [
+            "carbon-3-required",
+            "uuid-v7-default"
+          ]
+        },
+        {
+          "step": 3,
+          "action": "run_tests",
+          "required": true,
+          "automatable": false
+        }
+      ]
+    }
+  },
+  "full_upgrade_paths": {
+    "6-to-12": {
+      "steps": ["6-to-7", "7-to-8", "8-to-9", "9-to-10", "10-to-11", "11-to-12"],
+      "total_estimated_minutes": 255,
+      "critical_decisions": [
+        "Laravel 8: Factory migration strategy",
+        "Laravel 11: Keep old structure vs migrate"
+      ]
+    }
+  },
+  "validation_matrix": {
+    "php_version_compatible": {
+      "type": "php_version_check",
+      "compare": "minimum_required"
+    },
+    "composer_lock_exists": {
+      "type": "file_exists",
+      "file": "composer.lock"
+    },
+    "git_working_tree_clean": {
+      "type": "git_status",
+      "require": "clean"
+    },
+    "test_suite_passes": {
+      "type": "command",
+      "command": "php artisan test"
+    }
+  }
+}
