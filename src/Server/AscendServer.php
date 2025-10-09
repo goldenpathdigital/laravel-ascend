@@ -97,7 +97,7 @@ final class AscendServer
     public function getSupportedProtocolVersions(): array
     {
         return [
-            '2024-11-05',
+            '2025-06-18',
         ];
     }
 
@@ -284,10 +284,29 @@ final class AscendServer
         $baseDir = dirname(__DIR__) . '/Tools';
         $baseNamespace = 'GoldenPathDigital\\LaravelAscend\\Tools\\';
 
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($baseDir));
+        if (!is_dir($baseDir)) {
+            return [];
+        }
+
+        try {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS),
+                RecursiveIteratorIterator::SELF_FIRST
+            );
+            $iterator->setMaxDepth(5); // Limit recursion depth
+        } catch (\Exception $e) {
+            return [];
+        }
+
         $classes = [];
+        $fileCount = 0;
+        $maxFiles = 100; // Safety limit
 
         foreach ($iterator as $file) {
+            if (++$fileCount > $maxFiles) {
+                break; // Safety break to prevent excessive scanning
+            }
+
             if (!$file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
@@ -390,10 +409,29 @@ final class AscendServer
      */
     private static function discoverDescriptors(string $baseDir, string $baseNamespace, string $contract, ?KnowledgeBaseService $knowledgeBase = null): array
     {
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($baseDir));
+        if (!is_dir($baseDir)) {
+            return [];
+        }
+
+        try {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS),
+                RecursiveIteratorIterator::SELF_FIRST
+            );
+            $iterator->setMaxDepth(5); // Limit recursion depth
+        } catch (\Exception $e) {
+            return [];
+        }
+
         $results = [];
+        $fileCount = 0;
+        $maxFiles = 50; // Safety limit for resources/prompts
 
         foreach ($iterator as $file) {
+            if (++$fileCount > $maxFiles) {
+                break; // Safety break to prevent excessive scanning
+            }
+
             if (!$file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
