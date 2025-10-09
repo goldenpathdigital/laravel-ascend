@@ -27,13 +27,13 @@ final class GetCodeModificationSuggestionsTool extends ProjectAwareTool
         $version = isset($payload['version']) ? (string) $payload['version'] : null;
 
         if ($changeId === '') {
-            return $this->error('Parameter "change" is required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameter "change" is required.', [], $startedAt, 'invalid_request');
         }
 
         try {
             $details = $this->findChangeDetails($changeId, $version);
         } catch (DocumentationException $exception) {
-            return $this->error($exception->getMessage(), startedAt: $startedAt, code: 'not_found');
+            return $this->error($exception->getMessage(), [], $startedAt, 'not_found');
         }
 
         $payloadData = [
@@ -48,7 +48,7 @@ final class GetCodeModificationSuggestionsTool extends ProjectAwareTool
             $payloadData['file'] = $payload['file'];
         }
 
-        return $this->success($payloadData, startedAt: $startedAt);
+        return $this->success($payloadData, [], $startedAt);
     }
 
     /**

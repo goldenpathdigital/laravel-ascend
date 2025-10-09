@@ -58,11 +58,12 @@ final class SuggestPackageUpdatesTool extends ProjectAwareTool
         }
 
         return $this->success(
-            data: [
+            [
                 'target' => $target,
                 'suggestions' => $suggestions,
             ],
-            startedAt: $startedAt,
+            [],
+            $startedAt
         );
     }
 

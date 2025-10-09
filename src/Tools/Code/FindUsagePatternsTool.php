@@ -26,7 +26,7 @@ final class FindUsagePatternsTool extends ProjectAwareTool
         $patternId = isset($payload['pattern']) ? (string) $payload['pattern'] : '';
 
         if ($patternId === '') {
-            return $this->error('Parameter "pattern" is required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameter "pattern" is required.', [], $startedAt, 'invalid_request');
         }
 
         $scanner = $this->createScanner($context);
@@ -61,11 +61,11 @@ final class FindUsagePatternsTool extends ProjectAwareTool
         }
 
         return $this->success(
-            data: [
+            [
                 'results' => $results,
             ],
-            warnings: $warnings,
-            startedAt: $startedAt,
+            $warnings,
+            $startedAt
         );
     }
 

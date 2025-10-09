@@ -27,7 +27,7 @@ final class ScanBreakingChangesTool extends ProjectAwareTool
         $to = isset($payload['to']) ? (string) $payload['to'] : '';
 
         if ($from === '' || $to === '') {
-            return $this->error('Parameters "from" and "to" are required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameters "from" and "to" are required.', [], $startedAt, 'invalid_request');
         }
 
         $scanner = $this->createScanner($context);
@@ -36,12 +36,13 @@ final class ScanBreakingChangesTool extends ProjectAwareTool
         $results = $analyzer->analyze($from, $to);
 
         return $this->success(
-            data: [
+            [
                 'from' => $from,
                 'to' => $to,
                 'matches' => $results,
             ],
-            startedAt: $startedAt,
+            [],
+            $startedAt
         );
     }
 }

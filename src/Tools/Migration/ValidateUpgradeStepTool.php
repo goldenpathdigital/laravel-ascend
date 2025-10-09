@@ -29,7 +29,7 @@ final class ValidateUpgradeStepTool extends ProjectAwareTool
         $changeId = isset($payload['change']) ? (string) $payload['change'] : '';
 
         if ($from === '' || $to === '' || $changeId === '') {
-            return $this->error('Parameters "from", "to", and "change" are required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameters "from", "to", and "change" are required.', [], $startedAt, 'invalid_request');
         }
 
         $scanner = $this->createScanner($context);
@@ -42,12 +42,13 @@ final class ValidateUpgradeStepTool extends ProjectAwareTool
         }));
 
         return $this->success(
-            data: [
+            [
                 'change' => $changeId,
                 'validated' => $changeMatches === [],
                 'remaining_matches' => $changeMatches,
             ],
-            startedAt: $startedAt,
+            [],
+            $startedAt
         );
     }
 }

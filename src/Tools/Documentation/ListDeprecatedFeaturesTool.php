@@ -40,14 +40,14 @@ final class ListDeprecatedFeaturesTool extends AbstractTool
         $version = isset($payload['version']) ? (string) $payload['version'] : '';
 
         if ($version === '') {
-            return $this->error('Parameter "version" is required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameter "version" is required.', [], $startedAt, 'invalid_request');
         }
 
         try {
             $slug = $this->knowledgeBase->resolveBreakingChangeSlug($version);
             $document = $this->knowledgeBase->getBreakingChangeDocument($slug);
         } catch (DocumentationException $exception) {
-            return $this->error($exception->getMessage(), startedAt: $startedAt, code: 'not_found');
+            return $this->error($exception->getMessage(), [], $startedAt, 'not_found');
         }
 
         $deprecated = $this->extractDeprecatedChanges($document['breaking_changes'] ?? []);

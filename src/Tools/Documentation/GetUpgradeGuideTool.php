@@ -41,14 +41,14 @@ final class GetUpgradeGuideTool extends AbstractTool
         $to = isset($payload['to']) ? (string) $payload['to'] : '';
 
         if ($from === '' || $to === '') {
-            return $this->error('Parameters "from" and "to" are required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameters "from" and "to" are required.', [], $startedAt, 'invalid_request');
         }
 
         try {
             $identifier = $this->knowledgeBase->resolveUpgradePathIdentifier($from, $to);
             $path = $this->knowledgeBase->getUpgradePath($identifier);
         } catch (DocumentationException $exception) {
-            return $this->error($exception->getMessage(), startedAt: $startedAt, code: 'not_found');
+            return $this->error($exception->getMessage(), [], $startedAt, 'not_found');
         }
 
         $warnings = [];

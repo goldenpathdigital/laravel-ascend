@@ -28,7 +28,7 @@ final class CheckPackageCompatibilityTool extends ProjectAwareTool
         $target = isset($payload['target']) ? (string) $payload['target'] : '';
 
         if ($package === '' || $target === '') {
-            return $this->error('Parameters "package" and "target" are required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameters "package" and "target" are required.', [], $startedAt, 'invalid_request');
         }
 
         $composer = ComposerInspector::fromPath($context->getRootPath());
@@ -53,15 +53,15 @@ final class CheckPackageCompatibilityTool extends ProjectAwareTool
         }
 
         return $this->success(
-            data: [
+            [
                 'package' => $package,
                 'constraint' => $constraint,
                 'installed_version' => $installed,
                 'target' => $target,
                 'compatible' => $compatible,
             ],
-            warnings: $warnings,
-            startedAt: $startedAt,
+            $warnings,
+            $startedAt
         );
     }
 

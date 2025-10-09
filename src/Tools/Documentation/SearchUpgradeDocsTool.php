@@ -39,7 +39,7 @@ final class SearchUpgradeDocsTool extends AbstractTool
         $query = isset($payload['query']) ? trim((string) $payload['query']) : '';
 
         if ($query === '') {
-            return $this->error('Parameter "query" is required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameter "query" is required.', [], $startedAt, 'invalid_request');
         }
 
         $limit = isset($payload['limit']) ? max(1, (int) $payload['limit']) : 10;
@@ -60,12 +60,13 @@ final class SearchUpgradeDocsTool extends AbstractTool
         $results = array_slice($results, 0, $limit);
 
         return $this->success(
-            data: [
+            [
                 'query' => $query,
                 'limit' => $limit,
                 'results' => $results,
             ],
-            startedAt: $startedAt,
+            [],
+            $startedAt
         );
     }
 }

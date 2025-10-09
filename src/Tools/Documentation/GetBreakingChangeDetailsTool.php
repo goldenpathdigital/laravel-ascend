@@ -41,7 +41,7 @@ final class GetBreakingChangeDetailsTool extends AbstractTool
         $version = isset($payload['version']) ? (string) $payload['version'] : '';
 
         if ($changeId === '' || $version === '') {
-            return $this->error('Parameters "id" and "version" are required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameters "id" and "version" are required.', [], $startedAt, 'invalid_request');
         }
 
         try {
@@ -49,7 +49,7 @@ final class GetBreakingChangeDetailsTool extends AbstractTool
             $document = $this->knowledgeBase->getBreakingChangeDocument($slug);
             $entry = $this->knowledgeBase->getBreakingChangeEntry($slug, $changeId);
         } catch (DocumentationException $exception) {
-            return $this->error($exception->getMessage(), startedAt: $startedAt, code: 'not_found');
+            return $this->error($exception->getMessage(), [], $startedAt, 'not_found');
         }
 
         $data = [
@@ -59,6 +59,6 @@ final class GetBreakingChangeDetailsTool extends AbstractTool
             'change' => $entry,
         ];
 
-        return $this->success($data, startedAt: $startedAt);
+        return $this->success($data, [], $startedAt);
     }
 }

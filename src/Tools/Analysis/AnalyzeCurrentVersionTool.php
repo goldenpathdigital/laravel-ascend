@@ -25,6 +25,6 @@ final class AnalyzeCurrentVersionTool extends ProjectAwareTool
 
         $analysis = $this->projectAnalyzer->analyzeCurrentVersion($context);
 
-        return $this->success($analysis, startedAt: $startedAt);
+        return $this->success($analysis, [], $startedAt);
     }
 }

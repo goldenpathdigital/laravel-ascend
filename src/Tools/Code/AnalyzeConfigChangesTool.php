@@ -37,11 +37,12 @@ final class AnalyzeConfigChangesTool extends ProjectAwareTool
         }
 
         return $this->success(
-            data: [
+            [
                 'config_files' => $summaries,
                 'count' => count($summaries),
             ],
-            startedAt: $startedAt,
+            [],
+            $startedAt
         );
     }
 

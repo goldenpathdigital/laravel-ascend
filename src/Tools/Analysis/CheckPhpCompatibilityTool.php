@@ -58,7 +58,7 @@ final class CheckPhpCompatibilityTool extends ProjectAwareTool
         $target = isset($payload['target']) ? (string) $payload['target'] : '';
 
         if ($target === '') {
-            return $this->error('Parameter "target" is required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameter "target" is required.', [], $startedAt, 'invalid_request');
         }
 
         $result = $this->projectAnalyzer->checkPhpCompatibility($context, $target);

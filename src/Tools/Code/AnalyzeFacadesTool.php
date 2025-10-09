@@ -44,11 +44,12 @@ final class AnalyzeFacadesTool extends ProjectAwareTool
         }
 
         return $this->success(
-            data: [
+            [
                 'facade_usages' => $facades,
                 'count' => count($facades),
             ],
-            startedAt: $startedAt,
+            [],
+            $startedAt
         );
     }
 }

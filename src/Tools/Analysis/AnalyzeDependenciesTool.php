@@ -25,6 +25,6 @@ final class AnalyzeDependenciesTool extends ProjectAwareTool
 
         $result = $this->projectAnalyzer->analyzeDependencies($context);
 
-        return $this->success($result, startedAt: $startedAt);
+        return $this->success($result, [], $startedAt);
     }
 }

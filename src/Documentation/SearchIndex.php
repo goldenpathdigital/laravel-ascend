@@ -106,12 +106,12 @@ final class SearchIndex
             ];
 
             $entries[] = $this->createEntry(
-                type: 'breaking_change',
-                id: $identifier,
-                title: (string) ($change['title'] ?? $change['id']),
-                summary: $summary,
-                metadata: $metadata,
-                additionalTokens: [
+                'breaking_change',
+                $identifier,
+                (string) ($change['title'] ?? $change['id']),
+                $summary,
+                $metadata,
+                [
                     (string) ($change['id'] ?? ''),
                     (string) ($change['severity'] ?? ''),
                     (string) ($change['category'] ?? ''),
@@ -129,12 +129,12 @@ final class SearchIndex
             ];
 
             $entries[] = $this->createEntry(
-                type: 'pattern',
-                id: (string) $patternId,
-                title: (string) ($pattern['name'] ?? $patternId),
-                summary: $summary,
-                metadata: $metadata,
-                additionalTokens: array_merge(
+                'pattern',
+                (string) $patternId,
+                (string) ($pattern['name'] ?? $patternId),
+                $summary,
+                $metadata,
+                array_merge(
                     (array) ($pattern['applies_to_versions'] ?? []),
                     [
                         (string) ($pattern['category'] ?? ''),

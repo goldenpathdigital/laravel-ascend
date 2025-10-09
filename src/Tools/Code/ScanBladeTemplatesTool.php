@@ -41,11 +41,12 @@ final class ScanBladeTemplatesTool extends ProjectAwareTool
         }
 
         return $this->success(
-            data: [
+            [
                 'templates' => $findings,
                 'count' => count($findings),
             ],
-            startedAt: $startedAt,
+            [],
+            $startedAt
         );
     }
 }

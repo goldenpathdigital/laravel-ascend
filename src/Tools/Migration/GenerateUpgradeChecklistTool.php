@@ -27,7 +27,7 @@ final class GenerateUpgradeChecklistTool extends ProjectAwareTool
         $to = isset($payload['to']) ? (string) $payload['to'] : '';
 
         if ($from === '' || $to === '') {
-            return $this->error('Parameters "from" and "to" are required.', startedAt: $startedAt, code: 'invalid_request');
+            return $this->error('Parameters "from" and "to" are required.', [], $startedAt, 'invalid_request');
         }
 
         $path = $this->knowledgeBase->getUpgradePathByVersions($from, $to);
@@ -48,14 +48,15 @@ final class GenerateUpgradeChecklistTool extends ProjectAwareTool
         }
 
         return $this->success(
-            data: [
+            [
                 'from' => $path['from'] ?? $from,
                 'to' => $path['to'] ?? $to,
                 'difficulty' => $path['difficulty'] ?? null,
                 'estimated_time_minutes' => $path['estimated_time_minutes'] ?? null,
                 'checklist' => $checklist,
             ],
-            startedAt: $startedAt,
+            [],
+            $startedAt
         );
     }
 }

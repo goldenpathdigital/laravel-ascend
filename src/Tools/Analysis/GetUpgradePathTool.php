@@ -29,12 +29,12 @@ final class GetUpgradePathTool extends ProjectAwareTool
 
             // Validate version numbers
             if ($fromVersion <= 0 || $toVersion <= 0 || $fromVersion >= $toVersion) {
-                return $this->error('Invalid version range specified.', startedAt: $startedAt, code: 'invalid_request');
+                return $this->error('Invalid version range specified.', [], $startedAt, 'invalid_request');
             }
 
             // Check if versions are reasonable (Laravel 7-12 currently)
             if ($fromVersion > 100 || $toVersion > 100) {
-                return $this->error('Version numbers out of valid range.', startedAt: $startedAt, code: 'invalid_request');
+                return $this->error('Version numbers out of valid range.', [], $startedAt, 'invalid_request');
             }
 
             $path = [
@@ -46,7 +46,7 @@ final class GetUpgradePathTool extends ProjectAwareTool
                 ],
             ];
 
-            return $this->success($path, startedAt: $startedAt);
+            return $this->success($path, [], $startedAt);
         }
 
         $context = $this->createContext($payload);
@@ -54,6 +54,6 @@ final class GetUpgradePathTool extends ProjectAwareTool
 
         $path = $this->projectAnalyzer->getUpgradePath($context, $target);
 
-        return $this->success($path, startedAt: $startedAt);
+        return $this->success($path, [], $startedAt);
     }
 }
