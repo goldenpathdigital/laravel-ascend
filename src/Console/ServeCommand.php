@@ -22,7 +22,8 @@ class ServeCommand extends Command
         {--port=8765 : Port for WebSocket mode} 
         {--websocket : Serve over WebSocket instead of stdio} 
         {--stdio : Explicitly force stdio mode (default)} 
-        {--kb-path= : Path to a custom knowledge base directory}';
+        {--kb-path= : Path to a custom knowledge base directory} 
+        {--timeout= : Override server timeout in seconds (0 disables)}';
 
     protected $description = 'Start the Ascend MCP server (stdio by default, WebSocket optional).';
 
@@ -31,7 +32,24 @@ class ServeCommand extends Command
         $knowledgeBasePath = $this->option('kb-path');
         $server = AscendServer::createDefault($knowledgeBasePath ?: null);
 
+        $timeoutOption = $this->option('timeout');
         $maxRuntime = (int) config('ascend.server.max_runtime', 900);
+
+        if ($timeoutOption !== null && $timeoutOption !== '') {
+            if (!is_numeric($timeoutOption)) {
+                $this->error('Timeout must be a non-negative integer.');
+
+                return self::FAILURE;
+            }
+
+            $maxRuntime = (int) $timeoutOption;
+        }
+
+        if ($maxRuntime < 0) {
+            $this->error('Timeout must be a non-negative integer.');
+
+            return self::FAILURE;
+        }
 
         if ($maxRuntime <= 0) {
             set_time_limit(0);
