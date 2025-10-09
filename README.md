@@ -10,10 +10,10 @@ Ascend is an MCP-compatible server and toolkit that upgrades Laravel application
 - **Composer-friendly package** – auto-discovered Laravel service provider registers the Artisan commands needed for MCP integration.
 
 ## Requirements
-- PHP 7.4 or higher (supports PHP 7.4, 8.0, 8.1, 8.2, 8.3) with typical JSON extensions enabled
-- Laravel 6.x through 11.x
+- PHP 7.4+ or 8.x (supports PHP 7.4, 8.0, 8.1, 8.2, 8.3)
+- Laravel 6.x - 11.x
 - Composer 2.x
-- Node is **not** required unless you are running a client that needs it (e.g. VS Code + Cline)
+- Node.js is **not** required (server runs via PHP/Artisan)
 
 ## Installation
 
@@ -41,14 +41,19 @@ Ascend is an MCP-compatible server and toolkit that upgrades Laravel application
    php artisan ascend:register
    ```
    Registration automatically updates the following if present:
-   - `.vscode/mcp.json`
-   - `.cursor/mcp.json`
-   - `.junie/mcp/mcp.json`
-   - `~/.config/Code/User/mcp.json`
-   - `~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
-   - `~/.claude/mcp/mcp.json`
-   - `~/.config/Claude/mcp.json`
-   - `~/.config/Codex/mcp.json`
+   
+   **Project-level configurations:**
+   - `.vscode/mcp.json` (VSCode)
+   - `.cursor/mcp.json` (Cursor)
+   - `.junie/mcp/mcp.json` (Junie)
+   
+   **User-level configurations:**
+   - `~/.config/Code/User/mcp.json` (VSCode Global)
+   - `~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json` (Cline)
+   - `~/.claude/mcp/mcp.json` (Claude Desktop Legacy)
+   - `~/.config/Claude/mcp.json` (Claude Desktop)
+   - `~/.config/Codex/mcp.json` (Codex JSON)
+   - `~/.codex/config.toml` (Codex TOML)
 
 3. **Connect from your IDE**
    - In VS Code with Cline installed, open the MCP Servers panel and confirm `laravel-ascend` is enabled.

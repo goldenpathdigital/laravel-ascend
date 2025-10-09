@@ -547,9 +547,9 @@ array<int, array{
 
 ## Version Compatibility
 
-- **PHP**: 8.1+
-- **Laravel**: 9.x, 10.x, 11.x
-- **MCP Protocol**: 2024-11-05
+- **PHP**: 7.4+ / 8.x (supports PHP 7.4, 8.0, 8.1, 8.2, 8.3)
+- **Laravel**: 6.x - 11.x
+- **MCP Protocol**: 2025-06-18 (primary), 2024-11-05 (legacy), 2024-10-07 (legacy)
 
 ---
 

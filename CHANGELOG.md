@@ -11,14 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial release of Laravel Ascend
-- MCP server implementation with STDIO protocol
+- MCP server implementation with STDIO protocol (supports MCP protocol 2025-06-18, 2024-11-05, 2024-10-07)
 - 15+ analysis tools for Laravel upgrades
 - Knowledge base with breaking changes for Laravel 7-12
 - Comprehensive upgrade patterns and detection rules
 - Artisan commands (`ascend:mcp`, `ascend:register`)
+- IDE registration support for VSCode, Cursor, Junie, Cline, Claude Desktop, and Codex (JSON & TOML)
 - Cache manager with LRU eviction
 - Custom exception hierarchy (CacheException, ConfigException, ToolException)
-- Laravel facade support for convenient access
+- Built-in Laravel facade for convenient access
 - Thread-safe configuration loading
 - Input validation throughout
 - Resource cleanup with try-finally blocks
@@ -28,8 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PHPDoc coverage on all public methods
 - 40+ comprehensive tests
 - PHPStan level 8 compliance
-- PHP 7.4+ compatibility (supports PHP 7.4-8.x)
-- Laravel 6-11 support
+- PHP 7.4+ / 8.x compatibility (supports PHP 7.4, 8.0, 8.1, 8.2, 8.3)
+- Laravel 6.x - 11.x support
 
 ### Security
 - Input validation on all user inputs
@@ -63,8 +64,8 @@ When upgrading between versions, always:
 
 | Version | PHP          | Laravel  | Status      |
 |---------|--------------|----------|-------------|
-| 0.1.x   | 7.4+ / 8.x   | 6-11     | Development |
-| 1.x     | 7.4+ / 8.x   | 6-11     | Planned     |
+| 0.1.x   | 7.4+ / 8.x   | 6.x-11.x | Development |
+| 1.x     | 7.4+ / 8.x   | 6.x-11.x | Planned     |
 
 ## Contributing
 

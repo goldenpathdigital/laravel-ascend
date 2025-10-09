@@ -124,46 +124,23 @@ $pattern = $server->getPattern('factory-class-rewrite');
 // Returns pattern with detection rules and fix suggestions
 ```
 
-## Using with Facades (Optional)
+## Using with Facades
 
-Create a facade for cleaner syntax:
-
-```php
-// app/Facades/Ascend.php
-namespace App\Facades;
-
-use Illuminate\Support\Facades\Facade;
-
-class Ascend extends Facade
-{
-    protected static function getFacadeAccessor()
-    {
-        return \GoldenPathDigital\LaravelAscend\Server\AscendServer::class;
-    }
-}
-```
-
-Bind in service provider:
+Laravel Ascend includes a built-in facade for convenient access:
 
 ```php
-// app/Providers/AppServiceProvider.php
-public function register()
-{
-    $this->app->singleton(
-        \GoldenPathDigital\LaravelAscend\Server\AscendServer::class,
-        fn() => \GoldenPathDigital\LaravelAscend\Server\AscendServer::createDefault()
-    );
-}
-```
+use GoldenPathDigital\LaravelAscend\Facades\Ascend;
 
-Then use it:
-
-```php
-use App\Facades\Ascend;
-
+// The facade is automatically registered by the service provider
 $version = Ascend::callTool('analyze_current_version', [
     'project_root' => base_path(),
 ]);
+
+// Search the knowledge base
+$results = Ascend::searchKnowledgeBase('middleware changes');
+
+// Get breaking changes
+$change = Ascend::getBreakingChangeEntry('laravel-11', 'middleware-signature');
 ```
 
 ## Available Tools
@@ -202,12 +179,6 @@ $version = Ascend::callTool('analyze_current_version', [
 ```php
 // config/ascend.php
 return [
-    'server' => [
-        'host' => '127.0.0.1',
-        'port' => 8765,
-        'protocol' => 'websocket', // or 'stdio'
-    ],
-    
     'knowledge_base' => [
         'path' => null, // Auto-detects package path
         'cache_enabled' => true,

@@ -5,21 +5,6 @@ declare(strict_types=1);
 return [
     /*
     |--------------------------------------------------------------------------
-    | MCP Server Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Configure the MCP (Model Context Protocol) server settings including
-    | host, port, and protocol preferences.
-    |
-    */
-    'server' => [
-        'host' => env('ASCEND_MCP_HOST', '127.0.0.1'),
-        'port' => (int) env('ASCEND_MCP_PORT', 8765),
-        'protocol' => env('ASCEND_MCP_PROTOCOL', 'websocket'),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Knowledge Base Configuration
     |--------------------------------------------------------------------------
     |
