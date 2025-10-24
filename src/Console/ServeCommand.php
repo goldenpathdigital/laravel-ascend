@@ -19,13 +19,14 @@ use function set_time_limit;
 
 class ServeCommand extends Command
 {
-    protected $signature = 'ascend:mcp 
-        {--host=127.0.0.1 : Host for WebSocket mode} 
-        {--port=8765 : Port for WebSocket mode} 
-        {--websocket : Serve over WebSocket instead of stdio} 
-        {--stdio : Explicitly force stdio mode (default)} 
-        {--kb-path= : Path to a custom knowledge base directory} 
-        {--timeout= : Override server timeout in seconds (0 disables)}';
+    protected $signature = 'ascend:mcp
+        {--host=127.0.0.1 : Host for WebSocket mode}
+        {--port=8765 : Port for WebSocket mode}
+        {--websocket : Serve over WebSocket instead of stdio}
+        {--stdio : Explicitly force stdio mode (default)}
+        {--kb-path= : Path to a custom knowledge base directory}
+        {--timeout= : Override server timeout in seconds (0 disables)}
+        {--heartbeat=30 : Heartbeat interval in seconds for stdio mode (default: 30)}';
 
     protected $description = 'Start the Ascend MCP server (stdio by default, WebSocket optional).';
 
@@ -69,8 +70,14 @@ class ServeCommand extends Command
         }
 
         if (!$useWebsocket) {
+            $heartbeatInterval = (int) ($this->option('heartbeat') ?? 30);
+            if ($heartbeatInterval < 10) {
+                $this->warn('Heartbeat interval must be at least 10 seconds. Using 10.');
+                $heartbeatInterval = 10;
+            }
+
             $handler = new McpRequestHandler($server);
-            (new McpStdioServer($handler))->run();
+            (new McpStdioServer($handler, $heartbeatInterval))->run();
 
             return self::SUCCESS;
         }

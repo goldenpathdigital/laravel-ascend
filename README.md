@@ -22,8 +22,8 @@ Ascend is an MCP-compatible server and toolkit that upgrades Laravel application
    ```bash
    composer require --dev goldenpathdigital/laravel-ascend
    ```
-2. Laravel’s package auto-discovery registers the `AscendServiceProvider`, exposing:
-   - `php artisan ascend:mcp` – start the MCP server over stdio (add `--kb-path` if needed)
+2. Laravel's package auto-discovery registers the `AscendServiceProvider`, exposing:
+   - `php artisan ascend:mcp` – start the MCP server over stdio (add `--kb-path` or `--heartbeat` if needed)
    - `php artisan ascend:register` – register the server with supported MCP clients
 
 ## Quick Start
@@ -32,8 +32,11 @@ Ascend is an MCP-compatible server and toolkit that upgrades Laravel application
    ```bash
    php artisan ascend:mcp
    ```
-   - Runs over stdio (compatible with Cline/Claude Desktop).
+   - Runs over stdio (compatible with Cline/Claude Desktop, VSCode MCP).
    - Provide `--kb-path=/path/to/knowledge-base` to point at a custom data directory.
+   - Provide `--heartbeat=30` to configure heartbeat interval (default: 30 seconds, min: 10).
+
+   **Connection Keep-Alive:** The server automatically sends heartbeat notifications every 30 seconds (configurable) to prevent idle connection timeouts in MCP clients like VSCode.
 
 2. **Register the server with IDE clients**
    ```bash
@@ -63,14 +66,29 @@ Ascend is an MCP-compatible server and toolkit that upgrades Laravel application
 
 | Command | Description |
 | --- | --- |
-| `php artisan ascend:mcp [--kb-path=/path]` | Start the Ascend MCP server over stdio. |
+| `php artisan ascend:mcp [options]` | Start the Ascend MCP server over stdio. |
 | `php artisan ascend:register [--global]` | Add Ascend to detected MCP configuration targets (project + global). |
+
+### MCP Server Options
+
+| Option | Description | Default |
+| --- | --- | --- |
+| `--kb-path=/path` | Path to a custom knowledge base directory | Auto-detected |
+| `--heartbeat=30` | Heartbeat interval in seconds (prevents timeout) | 30 seconds |
+| `--timeout=900` | Server process timeout in seconds (0 = unlimited) | 900 seconds |
+| `--websocket` | Use WebSocket instead of stdio | stdio |
+| `--host=127.0.0.1` | Host for WebSocket mode | 127.0.0.1 |
+| `--port=8765` | Port for WebSocket mode | 8765 |
 
 ## Examples
 
 ### Starting the MCP server (stdio mode)
 ```bash
+# Basic usage
 php artisan ascend:mcp
+
+# With custom heartbeat interval (recommended for VSCode)
+php artisan ascend:mcp --heartbeat=20
 ```
 
 ### Generated Cline entry (excerpt)
