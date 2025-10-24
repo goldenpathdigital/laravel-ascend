@@ -9,7 +9,7 @@ Laravel Ascend is an MCP (Model Context Protocol) server that provides AI coding
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         MCP Client Layer                          │
-│              (Cline, Claude Desktop, Custom Clients)              │
+│              (Claude Desktop, VSCode, Custom Clients)             │
 └───────────────────────────┬───────────────────────────────────────┘
                             │ STDIO Protocol
                             │ (JSON-RPC Messages)

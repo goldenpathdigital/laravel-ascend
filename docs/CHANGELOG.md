@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Knowledge base with breaking changes for Laravel 7-12
 - Comprehensive upgrade patterns and detection rules
 - Artisan commands (`ascend:mcp`, `ascend:register`)
-- IDE registration support for VSCode, Cursor, Junie, Cline, Claude Desktop, and Codex (JSON & TOML)
+- IDE registration support for VSCode, Cursor, Junie, Claude Desktop, and Codex (JSON & TOML)
 - Cache manager with LRU eviction
 - Custom exception hierarchy (CacheException, ConfigException, ToolException)
 - Built-in Laravel facade for convenient access

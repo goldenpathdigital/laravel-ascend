@@ -1,12 +1,12 @@
 # Laravel Ascend
 
-Ascend is an MCP-compatible server and toolkit that upgrades Laravel applications with structured upgrade documentation, analyzers, and automation. It ships with a curated Laravel knowledge base, a rich MCP tool suite, and first-class Artisan commands that make it easy to surface the guidance directly in modern IDEs like VS Code via Cline.
+Ascend is an MCP-compatible server and toolkit that upgrades Laravel applications with structured upgrade documentation, analyzers, and automation. It ships with a curated Laravel knowledge base, a rich MCP tool suite, and first-class Artisan commands that make it easy to surface the guidance directly in modern IDEs like VS Code.
 
 ## Features
 - **MCP-ready server** – launch over stdio via `php artisan ascend:mcp`, exposing tools, resources, and prompts that follow the Model Context Protocol.
 - **Curated knowledge base** – search upgrade guides, breaking changes, migration patterns, and upgrade paths sourced from `resources/knowledge-base`.
 - **Extensive tool catalog** – documentation queries, dependency scanners, code migration advisors, and package compatibility checks implemented under `src/Tools`.
-- **One-command IDE registration** – `ascend:register` writes entries to `.vscode/mcp.json`, `.cursor/mcp.json`, `.junie/mcp/mcp.json`, and Cline’s `cline_mcp_settings.json`.
+- **One-command IDE registration** – `ascend:register` writes entries to `.vscode/mcp.json`, `.cursor/mcp.json`, and `.junie/mcp/mcp.json`.
 - **Composer-friendly package** – auto-discovered Laravel service provider registers the Artisan commands needed for MCP integration.
 
 ## Requirements
@@ -32,7 +32,7 @@ Ascend is an MCP-compatible server and toolkit that upgrades Laravel application
    ```bash
    php artisan ascend:mcp
    ```
-   - Runs over stdio (compatible with Cline/Claude Desktop, VSCode MCP).
+   - Runs over stdio (compatible with Claude Desktop, VSCode MCP).
    - Provide `--kb-path=/path/to/knowledge-base` to point at a custom data directory.
    - Provide `--heartbeat=30` to configure heartbeat interval (default: 30 seconds, min: 10).
 
@@ -52,14 +52,13 @@ Ascend is an MCP-compatible server and toolkit that upgrades Laravel application
    
    **User-level configurations:**
    - `~/.config/Code/User/mcp.json` (VSCode Global)
-   - `~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json` (Cline)
    - `~/.claude/mcp/mcp.json` (Claude Desktop Legacy)
    - `~/.config/Claude/mcp.json` (Claude Desktop)
    - `~/.config/Codex/mcp.json` (Codex JSON)
    - `~/.codex/config.toml` (Codex TOML)
 
 3. **Connect from your IDE**
-   - In VS Code with Cline installed, open the MCP Servers panel and confirm `laravel-ascend` is enabled.
+   - In VS Code, open the MCP Servers panel and confirm `laravel-ascend` is enabled.
    - For other MCP-aware clients, import the generated config or point them at the running stdio endpoint.
 
 ## Artisan Commands
@@ -91,7 +90,7 @@ php artisan ascend:mcp
 php artisan ascend:mcp --heartbeat=20
 ```
 
-### Generated Cline entry (excerpt)
+### Generated configuration entry (excerpt)
 ```json
 {
   "mcpServers": {

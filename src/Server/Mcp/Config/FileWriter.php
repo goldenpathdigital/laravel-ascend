@@ -278,7 +278,7 @@ final class FileWriter
 
         // Extract filename to check for common MCP config names
         $fileName = basename($filePath);
-        $validNames = ['mcp.json', 'cline_mcp_settings.json'];
+        $validNames = ['mcp.json'];
 
         if (!in_array($fileName, $validNames, true)) {
             // Allow other names but ensure they contain 'mcp' for safety

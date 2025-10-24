@@ -127,7 +127,7 @@ it('merges existing json configurations without overwriting other servers', func
     }
 });
 
-it('registers cline and global targets automatically', function (): void {
+it('registers project and global targets automatically', function (): void {
     $homeDir = sys_get_temp_dir() . '/ascend-home-' . uniqid();
     $projectDir = sys_get_temp_dir() . '/ascend-project-' . uniqid();
 
@@ -144,7 +144,7 @@ it('registers cline and global targets automatically', function (): void {
     $written = $registration->register($projectDir);
 
     expect($written)->toContain($projectDir . '/.vscode/mcp.json');
-    expect($written)->toContain($homeDir . '/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json');
+    expect($written)->toContain($homeDir . '/.config/Code/User/mcp.json');
 
     foreach ($written as $path) {
         expect(is_file($path))->toBeTrue();
@@ -152,9 +152,6 @@ it('registers cline and global targets automatically', function (): void {
     }
 
     removePath($projectDir);
-    removePath($homeDir . '/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings');
-    removePath($homeDir . '/.config/Code/User/globalStorage/saoudrizwan.claude-dev');
-    removePath($homeDir . '/.config/Code/User/globalStorage');
     removePath($homeDir . '/.config/Code/User');
     removePath($homeDir . '/.config/Code');
     removePath($homeDir . '/.config/Claude');

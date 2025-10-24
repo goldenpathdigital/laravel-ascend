@@ -121,11 +121,6 @@ final class McpRegistration
                 'label' => 'VSCode (Global)',
             ];
 
-            $targets[] = [
-                'path' => $home . '/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json',
-                'configKey' => 'mcpServers',
-                'label' => 'Cline (Global)',
-            ];
 
             $targets[] = [
                 'path' => $home . '/.claude/mcp/mcp.json',
