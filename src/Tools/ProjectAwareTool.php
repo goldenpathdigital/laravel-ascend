@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace GoldenPathDigital\LaravelAscend\Tools;
 
-use function base_path;
-
 use GoldenPathDigital\LaravelAscend\Analyzers\FilesystemScanner;
 use GoldenPathDigital\LaravelAscend\Analyzers\PatternAnalyzer;
 use GoldenPathDigital\LaravelAscend\Analyzers\ProjectAnalyzer;
@@ -31,7 +29,7 @@ abstract class ProjectAwareTool extends AbstractTool
      */
     protected function createContext(array $payload): ProjectContext
     {
-        $root = $payload['project_root'] ?? base_path();
+        $root = $payload['project_root'] ?? (function_exists('base_path') ? base_path() : getcwd());
 
         return new ProjectContext((string) $root);
     }

@@ -75,6 +75,7 @@ abstract class AbstractTool implements ToolInterface
     /**
      * @param array<string, array<string, mixed>> $properties
      * @param array<int, string> $required
+     * @return array<string, mixed>
      */
     protected function buildSchema(array $properties = [], array $required = [], bool $allowAdditional = false): array
     {
