@@ -39,14 +39,17 @@ These guidelines help ensure safe, systematic Laravel framework upgrades.
 3. **Review breaking changes** - Use the knowledge base to identify all breaking changes for your upgrade path
 4. **Update dependencies first** - Ensure all composer packages are compatible with the target Laravel version
 5. **Back up your project** - Always have a backup or use version control before starting
+6. **Baseline first** - Establish the baseline (tests, performance, backups, environment notes) before touching code, dependencies, or composer configuration.
 
 ## Context Discipline
 
+- Complete the baseline checklist (tests, metrics, backups, environment snapshot) before invoking upgrade or code-modifying tools.
 - Inspect tool schemas via `describe_tools` before calling anything; confirm required parameters.
 - Call tools only when information is missing from the current discussion; reference earlier outputs instead of re-running them.
 - Summarise tool results in a few actionable bullets and persist key identifiers (e.g., upgrade path IDs) for later steps.
 - Defer expensive file-scanning tools (e.g., pattern searches, Blade scans) until you are ready to make code changes in that area of the plan.
 - When you do run scans, narrow their scope (specific directories/globs) so outputs stay focused and manageable.
+- Use the dedicated analyzers (e.g., `scan_breaking_changes`, `find_usage_patterns`) rather than manual file greps—tool output is structured and easier to reuse.
 - Avoid pasting entire JSON payloads into replies—extract only the fields needed to progress.
 - Note when results become stale (project updated, dependencies changed) and refresh tools selectively.
 - Record each tool invocation in your working notes (name, inputs, summary) to avoid redundant calls later in the process.

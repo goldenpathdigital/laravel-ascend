@@ -20,32 +20,25 @@ final class CheckPhpCompatibilityTool extends ProjectAwareTool
 
     public function getInputSchema(): array
     {
-        $schema = $this->buildSchema(
+        return $this->buildSchema(
             array_merge(
                 $this->baseProjectProperties(),
                 [
                     'target' => [
                         'type' => 'string',
-                        'description' => 'Target Laravel version (e.g. "11" or "11.x"). Required unless `php_version` and `target_laravel_version` are provided.',
+                        'description' => 'Target Laravel version (e.g. "11" or "11.x"). Required unless both `php_version` and `target_laravel_version` are provided.',
                     ],
                     'php_version' => [
                         'type' => 'string',
-                        'description' => 'Explicit PHP version to check (e.g. "8.2.1").',
+                        'description' => 'Explicit PHP version to check (e.g. "8.2.1"). Must be used together with `target_laravel_version`.',
                     ],
                     'target_laravel_version' => [
                         'type' => 'string',
-                        'description' => 'Laravel version to compare against when providing explicit PHP version.',
+                        'description' => 'Laravel version to compare against when providing explicit PHP version. Must be used together with `php_version`.',
                     ],
                 ]
             )
         );
-
-        $schema['anyOf'] = [
-            ['required' => ['target']],
-            ['required' => ['php_version', 'target_laravel_version']],
-        ];
-
-        return $schema;
     }
 
     public function execute(array $payload): array

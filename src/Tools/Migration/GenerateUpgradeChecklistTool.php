@@ -25,13 +25,7 @@ final class GenerateUpgradeChecklistTool extends ProjectAwareTool
             $this->upgradeRangeProperties()
         );
 
-        $schema = $this->buildSchema($properties);
-        $schema['anyOf'] = [
-            ['required' => ['from', 'to']],
-            ['required' => ['project_root']],
-        ];
-
-        return $schema;
+        return $this->buildSchema($properties);
     }
 
     public function execute(array $payload): array

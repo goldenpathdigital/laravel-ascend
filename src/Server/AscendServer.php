@@ -91,7 +91,7 @@ final class AscendServer
         return implode(PHP_EOL, [
             'Ascend exposes structured Laravel upgrade guidance, analyzers, and migration utilities.',
             '',
-            'Before starting an upgrade, establish a baseline:',
+            'Before starting an upgrade, establish a baseline (no code or dependency changes until this is complete):',
             '- Run the full test suite and record the results.',
             '- Capture key performance and error-rate metrics.',
             '- Back up the database and storage assets.',
@@ -104,6 +104,7 @@ final class AscendServer
             '- Avoid re-running a tool unless new inputs would change the result; reference prior outputs instead.',
             '- Capture summaries/identifiers from each tool call in your working notes and reuse them instead of re-fetching.',
             '- Summarise tool responses concisely (≤5 bullet points) and store key identifiers for reuse.',
+            '- Prefer purpose-built analyzers over manual grepping; tools give structured, reusable data.',
             '- Trim or summarise large outputs before replying to keep the conversation context lean.',
             '- Build or update your plan before launching tool calls so heavier scans happen precisely when their results will be applied.',
         ]);

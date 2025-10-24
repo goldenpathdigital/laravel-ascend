@@ -26,14 +26,7 @@ final class ScanBreakingChangesTool extends ProjectAwareTool
             $this->upgradeRangeProperties()
         );
 
-        $schema = $this->buildSchema($properties);
-        $schema['anyOf'] = [
-            ['required' => ['from', 'to']],
-            ['required' => ['target']],
-            ['required' => ['project_root']],
-        ];
-
-        return $schema;
+        return $this->buildSchema($properties);
     }
 
     public function execute(array $payload): array

@@ -26,22 +26,16 @@ final class GetUpgradePathTool extends ProjectAwareTool
             [
                 'from_version' => [
                     'type' => 'string',
-                    'description' => 'Explicit starting version when requesting a custom range (e.g. "9" or "9.x").',
+                    'description' => 'Explicit starting version when requesting a custom range (e.g. "9" or "9.x"). Must be used together with `to_version`.',
                 ],
                 'to_version' => [
                     'type' => 'string',
-                    'description' => 'Explicit target version when requesting a custom range.',
+                    'description' => 'Explicit target version when requesting a custom range. Must be used together with `from_version`.',
                 ],
             ]
         );
 
-        $schema = $this->buildSchema($properties);
-        $schema['anyOf'] = [
-            ['required' => ['from_version', 'to_version']],
-            ['required' => ['project_root']],
-        ];
-
-        return $schema;
+        return $this->buildSchema($properties);
     }
 
     public function execute(array $payload): array

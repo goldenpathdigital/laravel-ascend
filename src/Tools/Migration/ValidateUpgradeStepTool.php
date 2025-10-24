@@ -32,13 +32,7 @@ final class ValidateUpgradeStepTool extends ProjectAwareTool
             ]
         );
 
-        $schema = $this->buildSchema($properties, ['change']);
-        $schema['anyOf'] = [
-            ['required' => ['from', 'to', 'change']],
-            ['required' => ['project_root', 'change']],
-        ];
-
-        return $schema;
+        return $this->buildSchema($properties, ['change']);
     }
 
     public function execute(array $payload): array
